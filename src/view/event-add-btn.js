@@ -1,4 +1,4 @@
-import {createElement} from '../render';
+import {createElement} from '../render.js';
 
 const createNewEventTemplate = () => (
   '<button class="trip-main__event-add-btn btn btn--big btn--yellow" type="button" disabled>New event</button>'
