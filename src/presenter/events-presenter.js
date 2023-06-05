@@ -1,13 +1,13 @@
-import CreatingEventView from '../view/creating-event-view';
+import CreatingEvent from '../view/creating-event';
 import EventAddBtn from '../view/event-add-btn';
-import EventItemView from '../view/event-item-view';
+import EventItem from '../view/event-item';
 import SortView from '../view/sort-view';
-import TripEventListView from '../view/trip-event-list-view';
+import TripEventList from '../view/trip-event-list';
 import {render} from '../render';
 
 export default class ListEventPresenter {
   constructor() {
-    this.eventList = new TripEventListView();
+    this.eventList = new TripEventList();
   }
 
   init (eventContainer){
@@ -15,10 +15,10 @@ export default class ListEventPresenter {
 
     render(new SortView(), this.eventContainer);
     render(this.eventList, this.eventContainer);
-    render(new CreatingEventView(), this.eventList.getElement());
+    render(new CreatingEvent(), this.eventList.getElement());
 
     for (let i = 0; i < 3; i++) {
-      render(new EventItemView(), this.eventList.getElement());
+      render(new EventItem(), this.eventList.getElement());
     }
 
     render(new EventAddBtn(), this.eventList.getElement());
