@@ -24,3 +24,4 @@ export default class ListEventPresenter {
     render(new CreatingEventView(), this.boardComponent.getElement());
   }
 }
+

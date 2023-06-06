@@ -57,3 +57,4 @@ export default class WayView {
     this.element = null;
   }
 }
+

@@ -154,3 +154,4 @@ export default class EditEventView {
     this.element = null;
   }
 }
+

@@ -21,3 +21,4 @@ export default class PointsModel {
     return this.offers;
   }
 }
+

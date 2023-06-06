@@ -161,3 +161,4 @@ export default class CreatingEventView {
     this.element = null;
   }
 }
+

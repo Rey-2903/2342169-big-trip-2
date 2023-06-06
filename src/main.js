@@ -17,3 +17,4 @@ render(new FiltersView(), siteHeader.querySelector('.trip-controls__filters'));
 
 pointsModel.init(points, destinations, offersByType);
 modalPresenter.init(pointsModel);
+

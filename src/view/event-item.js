@@ -55,3 +55,4 @@ export default class EventItem {
     this.element = null;
   }
 }
+
