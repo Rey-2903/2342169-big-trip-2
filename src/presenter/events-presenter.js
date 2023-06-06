@@ -1,27 +1,30 @@
-import CreatingEvent from '../view/creating-event';
-import EventAddBtn from '../view/event-add-btn';
-import EventItem from '../view/event-item';
+import ListEventsView from '../view/list-events-view';
+import CardPointsView from '../view/card-points-view';
+import CreateFormView from '../view/create-form-view';
+import EditFormView from '../view/edit-form-view';
 import SortView from '../view/sort-view';
-import TripEventList from '../view/trip-event-list';
-import {render} from '../render';
+import { render } from '../render.js';
 
-export default class ListEventPresenter {
+export default class EventsPresenter {
   constructor() {
-    this.eventList = new TripEventList();
+    this.eventsList = new ListEventsView();
   }
 
-  init (eventContainer){
-    this.eventContainer = eventContainer;
+  init (tripContainer, pointsModel, editingFormModel, destinationsModel) {
+    this.tripContainer = tripContainer;
+    this.pointsModel = pointsModel;
+    this.points = [...this.pointsModel.getPoints()];
+    this.destinations = destinationsModel.getDestinations();
 
-    render(new SortView(), this.eventContainer);
-    render(this.eventList, this.eventContainer);
-    render(new CreatingEvent(), this.eventList.getElement());
+    render(new SortView(), this.tripContainer);
+    render(this.eventsList, this.tripContainer);
+    render(new EditFormView(editingFormModel.getForm(), this.destinations),
+      this.eventsList.getElement());
 
-    for (let i = 0; i < 3; i++) {
-      render(new EventItem(), this.eventList.getElement());
+    for (let i = 0; i < this.points.length; i++) {
+      render(new CardPointsView(this.points[i], this.destinations), this.eventsList.getElement());
     }
 
-    render(new EventAddBtn(), this.eventList.getElement());
+    render(new CreateFormView(this.destinations), this.eventsList.getElement());
   }
 }
-
