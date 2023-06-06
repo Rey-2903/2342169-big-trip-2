@@ -1,13 +1,13 @@
 import CreatingEventView from '../view/creating-event-view';
 import EditEventView from '../view/edit-event-view';
-import TripEventList from '../view/trip-event-list';
+import TripEventListView from '../view/trip-event-list-view';
 import WayView from '../view/way-view';
 import SortView from '../view/sort-view.js';
 import { render } from '../render.js';
 
 export default class ListEventPresenter {
   constructor() {
-    this.boardComponent = new TripEventList();
+    this.boardComponent = new TripEventListView();
   }
 
   init (tripContainer) {
