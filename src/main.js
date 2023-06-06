@@ -1,11 +1,19 @@
 import FiltersView from './view/filters-view';
-import ListEventPresenter from './presenter/events-presenter';
-import { render } from './render.js';
+import {render} from './render.js';
+import ModelPresenter from './presenter/modal-presenter';
+import PointsModel from './model/point-model.js';
+import { getPoints, getDestinations, getOffersByType } from './fish/point.js';
 
-const siteHeader = document.querySelector('.trip-main');
 const siteMain = document.querySelector('.page-main');
-const tripPresenter = new ListEventPresenter();
+const siteHeader = document.querySelector('.trip-main');
+const modalPresenter = new ModelPresenter(siteMain.querySelector('.trip-events'));
+const points = getPoints();
+const offersByType = getOffersByType();
+const destinations = getDestinations();
+
+const pointsModel = new PointsModel();
 
 render(new FiltersView(), siteHeader.querySelector('.trip-controls__filters'));
 
-tripPresenter.init(siteMain.querySelector('.trip-events'));
+pointsModel.init(points, destinations, offersByType);
+modalPresenter.init(pointsModel);

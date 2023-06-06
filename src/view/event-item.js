@@ -38,7 +38,7 @@ const createNewEventItemTemplate = () => (
   </div>`
 );
 
-export default class EventItemView {
+export default class EventItem {
   getTemplate() {
     return createNewEventItemTemplate();
   }

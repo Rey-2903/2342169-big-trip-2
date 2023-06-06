@@ -4,7 +4,7 @@ const createNewListEventTenplate = () => (
   '<ul class="trip-events__list"></ul>'
 );
 
-export default class TripEventListView {
+export default class TripEventList {
   getTemplate() {
     return createNewListEventTenplate();
   }
