@@ -1,26 +1,26 @@
-import EventAddBtn from '../view/event-add-btn';
-import CreatingEventView from '../view/creating-event-view';
+import EventsView from '../view/list-events-view.js';
+import CardPointsView from '../view/card-points-view.js';
+import CreateFormView from '../view/create-form-view.js';
+import EditFormView from '../view/edit-form-view.js';
 import SortView from '../view/sort-view.js';
-import EventItemView from '../view/event-item-view';
-import TripEventListView from '../view/trip-event-list-view';
 import { render } from '../render.js';
 
-export default class ListEventPresenter{
+export default class EventsPresenter {
   constructor() {
-    this.eventsList = new TripEventListView();
+    this.eventsList = new EventsView();
   }
 
-  init (tripContainer){
+  init (tripContainer) {
     this.tripContainer = tripContainer;
 
     render(new SortView(), this.tripContainer);
     render(this.eventsList, this.tripContainer);
-    render(new CreatingEventView(), this.eventsList.getElement());
+    render(new EditFormView(), this.eventsList.getElement());
 
-    for(let i = 0; i < 3; i++){
-      render(new EventItemView(), this.eventsList.getElement());
+    for (let i = 0; i < 3; i++){
+      render(new CardPointsView(), this.eventsList.getElement());
     }
 
-    render(new EventAddBtn(), this.eventsList.getElement());
+    render(new CreateFormView(), this.eventsList.getElement());
   }
 }
