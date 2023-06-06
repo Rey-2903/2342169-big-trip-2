@@ -1,11 +1,18 @@
-import FiltersView from './view/filters-view';
-import ListEventPresenter from './presenter/events-presenter';
+import FiltersView from './view/filters-view.js';
+import EventsPresenter from './presenter/events-presenter';
+import PointsModel from './model/points-model.js';
+import EditFormModel from './model/edit-form-model.js';
+import DestinationModel from './model/destination-model';
 import { render } from './render.js';
 
-const siteHeader = document.querySelector('.trip-main');
-const siteMain = document.querySelector('.page-main');
-const tripPresenter = new ListEventPresenter();
+const siteHeaderElement = document.querySelector('.trip-main');
+const siteMainElement = document.querySelector('.page-main');
+const tripPresenter = new EventsPresenter();
 
-render(new FiltersView(), siteHeader.querySelector('.trip-controls__filters'));
+const pointsModel = new PointsModel();
+const editFormModel = new EditFormModel();
+const destinationModel = new DestinationModel();
 
-tripPresenter.init(siteMain.querySelector('.trip-events'));
+render(new FiltersView(), siteHeaderElement.querySelector('.trip-controls__filters'));
+
+tripPresenter.init(siteMainElement.querySelector('.trip-events'), pointsModel, editFormModel, destinationModel);
