@@ -21,3 +21,4 @@ export default class TripEventList {
     this.element = null;
   }
 }
+

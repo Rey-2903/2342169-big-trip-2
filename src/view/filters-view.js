@@ -35,3 +35,4 @@ export default class FiltersView {
     this.element = null;
   }
 }
+

@@ -77,3 +77,4 @@ export default class ViewingPointView {
     this.element = null;
   }
 }
+

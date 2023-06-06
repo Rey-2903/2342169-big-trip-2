@@ -21,3 +21,4 @@ export default class EventAddBtn {
     this.element = null;
   }
 }
+

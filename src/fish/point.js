@@ -72,3 +72,4 @@ const generatePoint = (id) => {
 const getPoints = () => Array.from({length: NUMBER_POINT}).map((value, index) => generatePoint (index + 1));
 
 export {getPoints, getDestinations, getOffersByType };
+
