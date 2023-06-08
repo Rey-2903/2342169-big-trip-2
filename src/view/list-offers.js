@@ -7,23 +7,26 @@ const createListOffersTemplate = (offers) => (
 );
 
 export default class ListOffers {
+  #element = null;
+  #offers = null;
+
   constructor(offers){
-    this.offers = offers;
+    this.#offers = offers;
   }
 
-  getTemplate () {
-    return createListOffersTemplate(this.offers);
+  get template () {
+    return createListOffersTemplate(this.#offers);
   }
 
-  getElement() {
-    if (!this.element){
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element){
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }

@@ -7,7 +7,6 @@ const getOffers = (chooseElement, allElement) => {
   if (allElement.length === 0) {
     return '';
   }
-
   let offers = '';
 
   allElement.forEach((item) => {
@@ -20,7 +19,7 @@ const getOffers = (chooseElement, allElement) => {
     }
   });
 
-  return new ListOffers(offers).getTemplate();
+  return new ListOffers(offers).template;
 };
 
 const creatingCardPointTemplate = (point, availablePoints) => {
@@ -68,24 +67,28 @@ const creatingCardPointTemplate = (point, availablePoints) => {
 };
 
 export default class CardPointsView {
+  #element = null;
+  #point = null;
+  #allDestinations = null;
+
   constructor(point, allDestinations){
-    this.point = point;
-    this.allDestinations = allDestinations;
+    this.#point = point;
+    this.#allDestinations = allDestinations;
   }
 
-  getTemplate () {
-    return creatingCardPointTemplate(this.point, this.allDestinations);
+  get template () {
+    return creatingCardPointTemplate(this.#point, this.#allDestinations);
   }
 
-  getElement() {
-    if (!this.element){
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element){
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }

@@ -32,5 +32,4 @@ const getRoutePeriod = (dateFrom, dateTo) => {
   return minutes;
 };
 
-
-export{getRandomNumber, getRandomElement, humanizeDay, humanizeTime, humanizeDate, getRoutePeriod};
+export {getRandomNumber, getRandomElement, humanizeDay, humanizeTime, humanizeDate, getRoutePeriod};

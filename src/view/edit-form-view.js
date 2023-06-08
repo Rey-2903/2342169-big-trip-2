@@ -202,24 +202,28 @@ const creatingEditFormTemplate = (form, allDestinations) => {
 };
 
 export default class EditFormView {
+  #element = null;
+  #form = null;
+  #destinations = null;
+
   constructor(form, allDestinatioins){
-    this.form = form;
-    this.destinations = allDestinatioins;
+    this.#form = form;
+    this.#destinations = allDestinatioins;
   }
 
-  getTemplate () {
-    return creatingEditFormTemplate(this.form, this.destinations);
+  get template () {
+    return creatingEditFormTemplate(this.#form, this.#destinations);
   }
 
-  getElement() {
-    if (!this.element){
-      this.element = createElement(this.getTemplate());
+  get element() {
+    if (!this.#element){
+      this.#element = createElement(this.template);
     }
 
-    return this.element;
+    return this.#element;
   }
 
   removeElement() {
-    this.element = null;
+    this.#element = null;
   }
 }

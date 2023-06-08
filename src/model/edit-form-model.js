@@ -1,9 +1,11 @@
 import { getForm } from '../fish/edit-form';
 
 export default class EditFormModel{
+  #form = null;
+
   constructor () {
-    this.form = getForm();
+    this.#form = getForm();
   }
 
-  getForm () { return this.form;}
+  get form () { return this.#form;}
 }
