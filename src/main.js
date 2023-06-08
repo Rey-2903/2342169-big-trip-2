@@ -14,3 +14,5 @@ const destinationModel = new DestinationModel();
 render(new FiltersView(), siteHeaderElement.querySelector('.trip-controls__filters'));
 
 eventsPresenter.init(siteMainElement.querySelector('.trip-events'), pointsModel, destinationModel);
+
+
