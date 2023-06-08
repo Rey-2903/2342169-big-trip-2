@@ -1,5 +1,5 @@
 const TYPES = ['taxi', 'bus', 'train', 'ship','drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
-const COUNT = 30;
+const COUNT = 0;
 const DESTINATIONS = ['Crimea', 'Paris', 'Peter', 'Sochi', 'Moscow', 'Istanbul', 'Tokyo', 'Rome', 'Dubai'];
 
 const OFFERS = ['Change to Business Class', 'Add breakfast', 'Add dinner', 'Carsharing', 'Reserve tickets',];
