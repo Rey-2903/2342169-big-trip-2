@@ -1,15 +1,21 @@
 import { createElement } from '../render.js';
 
-const createEventsTemplate = () => (
-  `<ul class="trip-events__list">
+const createListOffersTemplate = (offers) => (
+  `<ul class="event__selected-offers">
+    ${offers}
   </ul>`
 );
 
-export default class TripEventListView {
+export default class ListOffers {
   #element = null;
+  #offers = null;
+
+  constructor(offers){
+    this.#offers = offers;
+  }
 
   get template () {
-    return createEventsTemplate;
+    return createListOffersTemplate(this.#offers);
   }
 
   get element() {
