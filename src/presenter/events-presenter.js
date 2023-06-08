@@ -1,4 +1,5 @@
 import ListEventsView from '../view/list-events-view';
+import NoPointsView from '../view/no-points-view';
 import CardPointsView from '../view/card-points-view';
 import EditFormView from '../view/edit-form-view';
 import SortView from '../view/sort-view';
@@ -6,28 +7,38 @@ import { render } from '../render.js';
 
 export default class EventsPresenter {
   #eventsList = null;
+  #tripContainer = null;
+  #pointsModel = null;
+  #points = null;
+  #destinations = null;
 
   constructor() {
     this.#eventsList = new ListEventsView();
   }
 
   init (tripContainer, pointsModel, destinationsModel) {
-    this.tripContainer = tripContainer;
-    this.pointsModel = pointsModel;
-    this.points = [...this.pointsModel.points];
-    this.destinations = destinationsModel.destinations;
+    this.#tripContainer = tripContainer;
+    this.#pointsModel = pointsModel;
+    this.#points = [...this.#pointsModel.points];
+    this.#destinations = destinationsModel.destinations;
 
-    render(new SortView(), this.tripContainer);
-    render(this.#eventsList, this.tripContainer);
+    if(this.#points.length === 0){
+      render(new NoPointsView(), this.#tripContainer);
+    }
 
-    for (let i = 0; i < this.points.length; i++) {
-      this.#drawingPoint(this.points[i]);
+    else {
+      render(new SortView(), this.#tripContainer);
+      render(this.#eventsList, this.#tripContainer);
+
+      for (let i = 0; i < this.#points.length; i++) {
+        this.#drawingPoint(this.#points[i]);
+      }
     }
   }
 
   #drawingPoint (point) {
-    const pointInfForm = new CardPointsView(point, this.destinations);
-    const pointEditComponent = new EditFormView(point, this.destinations);
+    const pointInfForm = new CardPointsView(point, this.#destinations);
+    const pointEditComponent = new EditFormView(point, this.#destinations);
 
     const replacePointEditForm = () => {
       this.#eventsList.element.replaceChild(pointEditComponent .element, pointInfForm .element);
