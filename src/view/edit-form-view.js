@@ -1,6 +1,6 @@
-import { createElement } from '../render.js';
 import { humanizeDate } from '../utils.js';
 import { getOffersByType } from '../fish/list-offers.js';
+import AbstractView from '../framework/view/abstract-view';
 
 const fillOffersList = (checkedItems, allOffers) => {
   let offers = '';
@@ -85,10 +85,10 @@ const getDestinationBlock = (destination) => {
 
   return(
     `<section class="event__section  event__section--destination">
-    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-    <p class="event__destination-description">${description}</p>
-    ${getPhotosBlock(destination.pictures)}
-    </section>`);
+      <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+      <p class="event__destination-description">${description}</p>
+      ${getPhotosBlock(destination.pictures)}
+     </section>`);
 };
 
 const creatingEditFormTemplate = (form, allDestinations) => {
@@ -201,12 +201,12 @@ const creatingEditFormTemplate = (form, allDestinations) => {
   );
 };
 
-export default class EditFormView {
-  #element = null;
+export default class EditFormView extends AbstractView {
   #form = null;
   #destinations = null;
 
-  constructor(form, allDestinatioins){
+  constructor(form, allDestinatioins) {
+    super();
     this.#form = form;
     this.#destinations = allDestinatioins;
   }
@@ -215,15 +215,23 @@ export default class EditFormView {
     return creatingEditFormTemplate(this.#form, this.#destinations);
   }
 
-  get element() {
-    if (!this.#element){
-      this.#element = createElement(this.template);
-    }
+  submittingForm = (callback) => {
+    this._callback.formSubmit = callback;
+    this.element.addEventListener('submit', this.#formSubmitHandler);
+  };
 
-    return this.#element;
-  }
+  #formSubmitHandler = (i) => {
+    i.preventDefault();
+    this._callback.formSubmit();
+  };
 
-  removeElement() {
-    this.#element = null;
-  }
+  closingForm = (callback) => {
+    this._callback.formClose = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formCloseHandler);
+  };
+
+  #formCloseHandler = (i) => {
+    i.preventDefault();
+    this._callback.formClose();
+  };
 }

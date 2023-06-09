@@ -3,17 +3,6 @@ import duration from 'dayjs/plugin/duration';
 
 dayjs.extend(duration);
 
-const getRandomNumber = (beginning, finish) => {
-  beginning = Math.min(beginning,finish);
-  finish = Math.max(beginning, finish);
-  return Math.round(Math.random() * (finish - beginning) + beginning);
-};
-
-const getRandomElement = (el) => {
-  const randomIndex = getRandomNumber(0, el.length - 1);
-  return el[randomIndex];
-};
-
 const humanizeDay = (date) => dayjs(date).format('D MMMM');
 
 const humanizeTime = (date) => dayjs(date).format('HH:mm');
@@ -30,6 +19,17 @@ const getRoutePeriod = (dateFrom, dateTo) => {
   if (days !== '00' ) { minutes = `${days}D ${minutes}`; }
 
   return minutes;
+};
+
+const getRandomNumber = (beginning, finish) => {
+  beginning = Math.min(beginning,finish);
+  finish = Math.max(beginning, finish);
+  return Math.round(Math.random() * (finish - beginning) + beginning);
+};
+
+const getRandomElement = (el) => {
+  const randomIndex = getRandomNumber(0, el.length - 1);
+  return el[randomIndex];
 };
 
 export {getRandomNumber, getRandomElement, humanizeDay, humanizeTime, humanizeDate, getRoutePeriod};

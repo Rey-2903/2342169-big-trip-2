@@ -1,7 +1,7 @@
-import { createElement } from '../render.js';
+import AbstractView from '../framework/view/abstract-view';
 import { humanizeDay, humanizeTime, getRoutePeriod } from '../utils.js';
 import { getOffersByType } from '../fish/list-offers.js';
-import ListOffers from './list-offers.js';
+import ListOffersView from './list-offers-view.js';
 
 const getOffers = (chooseElement, allElement) => {
   if (allElement.length === 0) {
@@ -19,7 +19,7 @@ const getOffers = (chooseElement, allElement) => {
     }
   });
 
-  return new ListOffers(offers).template;
+  return new ListOffersView(offers).template;
 };
 
 const creatingCardPointTemplate = (point, availablePoints) => {
@@ -66,12 +66,12 @@ const creatingCardPointTemplate = (point, availablePoints) => {
   </li>`);
 };
 
-export default class CardPointsView {
-  #element = null;
+export default class CardPointsView extends AbstractView {
   #point = null;
   #allDestinations = null;
 
   constructor(point, allDestinations){
+    super();
     this.#point = point;
     this.#allDestinations = allDestinations;
   }
@@ -80,15 +80,13 @@ export default class CardPointsView {
     return creatingCardPointTemplate(this.#point, this.#allDestinations);
   }
 
-  get element() {
-    if (!this.#element){
-      this.#element = createElement(this.template);
-    }
+  handlerEditFormButton = (callback) => {
+    this._callback.editClick = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#buttonClickHandler);
+  };
 
-    return this.#element;
-  }
-
-  removeElement() {
-    this.#element = null;
-  }
+  #buttonClickHandler = (evt) => {
+    evt.preventDefault();
+    this._callback.editClick();
+  };
 }
