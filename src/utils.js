@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import { FiltersTypes } from './fish/const';
 
 dayjs.extend(duration);
 
@@ -32,4 +33,14 @@ const getRandomElement = (el) => {
   return el[randomIndex];
 };
 
-export {getRandomNumber, getRandomElement, humanizeDay, humanizeTime, humanizeDate, getRoutePeriod};
+const pastFilter = (point) => dayjs(point.dateFrom).isBefore(dayjs());
+
+const futureFilter = (point) => dayjs(point.dateFrom).isAfter(dayjs());
+
+const filterPoints = {
+  [FiltersTypes.EVERYTHING]: (points) => Array.from(points),
+  [FiltersTypes.FUTURE]: (points) => Array.from(points).filter((point) => futureFilter(point)),
+  [FiltersTypes.PAST]: (points) => Array.from(points).filter((point) => pastFilter(point))
+};
+
+export {filterPoints, pastFilter, futureFilter, getRandomNumber, getRandomElement, humanizeDay, humanizeTime, humanizeDate, getRoutePeriod};

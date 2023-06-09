@@ -1,28 +1,43 @@
 import AbstractView from '../framework/view/abstract-view';
 
-const creatingFiltersTemplate = () => (
-  `<form class="trip-filters" action="#" method="get">
-    <div class="trip-filters__filter">
-      <input id="filter-everything" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="everything">
-      <label class="trip-filters__filter-label" for="filter-everything">Everything</label>
-    </div>
+const creatingListFiltersItemTemplate = (filter, isChecked) => {
+  const {name, isPoints } = filter;
 
-    <div class="trip-filters__filter">
-      <input id="filter-future" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="future">
-      <label class="trip-filters__filter-label" for="filter-future">Future</label>
-    </div>
+  return (
+    `<div class="trip-filters__filter">
+      <input id="filter-${name}"
+        class="trip-filters__filter-input  visually-hidden"
+        type="radio"
+        name="trip-filter"
+        ${isChecked ? 'checked' : ''}
+        ${isPoints ? '' : 'disabled'}
+        value=${name}
+      >
+      <label class="trip-filters__filter-label" for="filter-${name}">${name}</label>
+    </div>`
+  );
+};
 
-    <div class="trip-filters__filter">
-      <input id="filter-past" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="past" checked>
-      <label class="trip-filters__filter-label" for="filter-past">Past</label>
-    </div>
+const creatingFiltersTemplate = (filters) => {
+  const item = Array.from(filters).map((name, isPoints) => creatingListFiltersItemTemplate(name, isPoints)).join('');
 
-    <button class="visually-hidden" type="submit">Accept filter</button>
-  </form>`
-);
+  return (
+    `<form class="trip-filters" action="#" method="get">
+      ${item}
+      <button class="visually-hidden" type="submit">Accept filter</button>
+    </form>`
+  );
+};
 
 export default class FiltersView extends AbstractView {
+  #filters = null;
+
+  constructor(filters) {
+    super();
+    this.#filters = filters;
+  }
+
   get template () {
-    return creatingFiltersTemplate();
+    return creatingFiltersTemplate(this.#filters);
   }
 }
