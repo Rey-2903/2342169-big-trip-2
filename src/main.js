@@ -2,7 +2,7 @@ import FiltersView from './view/filters-view.js';
 import EventsPresenter from './presenter/events-presenter';
 import PointsModel from './model/points-model.js';
 import DestinationModel from './model/destination-model';
-import { render } from './render.js';
+import { render } from './framework/render.js';
 
 const siteHeaderElement = document.querySelector('.trip-main');
 const siteMainElement = document.querySelector('.page-main');

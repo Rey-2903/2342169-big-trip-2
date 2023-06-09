@@ -3,7 +3,7 @@ import NoPointsView from '../view/no-points-view';
 import CardPointsView from '../view/card-points-view';
 import EditFormView from '../view/edit-form-view';
 import SortView from '../view/sort-view';
-import { render } from '../render.js';
+import { render, replace } from '../framework/render';
 
 export default class EventsPresenter {
   #eventsList = null;
@@ -41,11 +41,11 @@ export default class EventsPresenter {
     const pointEditComponent = new EditFormView(point, this.#destinations);
 
     const replacePointEditForm = () => {
-      this.#eventsList.element.replaceChild(pointEditComponent .element, pointInfForm .element);
+      replace(pointEditComponent, pointInfForm);
     };
 
     const replaceFormEditPoint = () => {
-      this.#eventsList.element.replaceChild(pointInfForm .element, pointEditComponent .element);
+      replace(pointInfForm, pointEditComponent);
     };
 
     const onEscKeyDown = (evt) => {
@@ -56,22 +56,19 @@ export default class EventsPresenter {
       }
     };
 
-    pointInfForm .element.querySelector('.event__rollup-btn').addEventListener('click', () => {
+    const closingForm = () => {
+      replaceFormEditPoint ();
+      document.removeEventListener('keydown', onEscKeyDown);
+    };
+
+    pointInfForm.handlerEditFormButton(() => {
       replacePointEditForm ();
       document.addEventListener('keydown', onEscKeyDown);
     });
 
-    pointEditComponent .element.addEventListener('submit', (i) => {
-      i.preventDefault();
-      replaceFormEditPoint ();
-      document.removeEventListener('keydown', onEscKeyDown);
-    });
+    pointEditComponent.submittingForm(closingForm);
+    pointEditComponent.closingForm(closingForm);
 
-    pointEditComponent .element.querySelector('.event__rollup-btn').addEventListener('click', () => {
-      replaceFormEditPoint ();
-      document.removeEventListener('keydown', onEscKeyDown);
-    });
-
-    render(pointInfForm , this.#eventsList.element);
+    render(pointInfForm, this.#eventsList.element);
   }
 }
