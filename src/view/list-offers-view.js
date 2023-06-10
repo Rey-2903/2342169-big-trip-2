@@ -1,9 +1,7 @@
 import AbstractView from '../framework/view/abstract-view';
 
 const createListOffersTemplate = (offers) => (
-  `<ul class="event__selected-offers">
-    ${offers}
-  </ul>`
+  `<ul class="event__selected-offers">${offers}</ul>`
 );
 
 export default class ListOffersView extends AbstractView {

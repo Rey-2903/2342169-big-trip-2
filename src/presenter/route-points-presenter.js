@@ -56,6 +56,11 @@ export default class RoutePointsPresenter {
     }
   };
 
+  destroy = () => {
+    remove(this.#pastPoint);
+    remove(this.#editingPoint);
+  };
+
   #replacePointEditForm = () => {
     replace(this.#editingPoint, this.#pastPoint);
 
