@@ -1,4 +1,4 @@
-import { getDestination } from '../fish/destination';
+import { getDestination } from '../fish/fish-data';
 import { DESTINATIONS } from '../fish/const.js';
 
 export default class DestinationModel{

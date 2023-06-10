@@ -89,4 +89,14 @@ export default class CardPointsView extends AbstractView {
     evt.preventDefault();
     this._callback.editClick();
   };
+
+  starInstallationHandler = (callback) => {
+    this._callback.starClick = callback;
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#starClick);
+  };
+
+  #starClick = (evt) => {
+    evt.preventDefault();
+    this._callback.starClick();
+  };
 }

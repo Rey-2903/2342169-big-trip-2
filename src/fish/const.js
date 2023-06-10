@@ -19,6 +19,11 @@ const FiltersTypes = {
   PAST: 'past',
 };
 
+const PointModes = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
+
 const IMAGE_DISCRIPTIONS = ['Pleasant place', 'Beautiful views', 'Live picture', 'Vintage city',];
 
 const ImageInf = { COUNT: 5, SRC: 100 };
@@ -27,4 +32,4 @@ const Prices = { MIN: 150, MAX: 4000 };
 
 const NumberServices = { MIN: 0, MAX: 5 };
 
-export {FiltersTypes, TYPES, COUNT, DESTINATIONS, OFFERS, DESCRIPTIONS, IMAGE_DISCRIPTIONS, ImageInf, Prices, NumberServices};
+export {FiltersTypes, TYPES, COUNT, DESTINATIONS, OFFERS, DESCRIPTIONS, PointModes, IMAGE_DISCRIPTIONS, ImageInf, Prices, NumberServices};
