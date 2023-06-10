@@ -43,4 +43,6 @@ const filterPoints = {
   [FiltersTypes.PAST]: (points) => Array.from(points).filter((point) => pastFilter(point))
 };
 
-export {filterPoints, pastFilter, futureFilter, getRandomNumber, getRandomElement, humanizeDay, humanizeTime, humanizeDate, getRoutePeriod};
+const isNull = (routePoint, editingRoutePoint) => routePoint === null || editingRoutePoint === null;
+
+export {isNull, filterPoints, pastFilter, futureFilter, getRandomNumber, getRandomElement, humanizeDay, humanizeTime, humanizeDate, getRoutePeriod};

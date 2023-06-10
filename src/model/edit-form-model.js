@@ -1,4 +1,4 @@
-import { getForm } from '../fish/edit-form';
+import { getForm } from '../fish/fish-data';
 
 export default class EditFormModel{
   #form = null;

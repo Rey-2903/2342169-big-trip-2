@@ -1,4 +1,4 @@
-import { getPoint } from '../fish/points.js';
+import { getPoint } from '../fish/fish-data';
 import { COUNT } from '../fish/const.js';
 
 export default class PointsModel{
