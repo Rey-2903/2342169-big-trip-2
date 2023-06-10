@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
-import { FiltersTypes } from './fish/const';
+import {FiltersTypes} from './fish/const';
 
 dayjs.extend(duration);
 
@@ -22,14 +22,14 @@ const getRoutePeriod = (dateFrom, dateTo) => {
   return minutes;
 };
 
-const getRandomNumber = (beginning, finish) => {
+const getRandomInteger = (beginning, finish) => {
   beginning = Math.min(beginning,finish);
   finish = Math.max(beginning, finish);
   return Math.round(Math.random() * (finish - beginning) + beginning);
 };
 
 const getRandomElement = (el) => {
-  const randomIndex = getRandomNumber(0, el.length - 1);
+  const randomIndex = getRandomInteger(0, el.length - 1);
   return el[randomIndex];
 };
 
@@ -43,6 +43,27 @@ const filterPoints = {
   [FiltersTypes.PAST]: (points) => Array.from(points).filter((point) => pastFilter(point))
 };
 
+const getEmptyDate = (d1, d2) => {
+  if (d1 === null && d2 === null) {
+    return 0;
+  }
+  if (d2 === null) {
+    return -1;
+  }
+  if (d1 === null) {
+    return 1;
+  }
+  return null;
+};
+
+const getPeriod = (p1, p2) => {
+  const per1 = getEmptyDate(p1.dateFrom, p1.dateTo);
+  const per2 = getEmptyDate(p2.dateFrom, p2.dateTo);
+  const res = per1 && per2;
+
+  return res;
+};
+
 const isNull = (routePoint, editingRoutePoint) => routePoint === null || editingRoutePoint === null;
 
-export {isNull, filterPoints, pastFilter, futureFilter, getRandomNumber, getRandomElement, humanizeDay, humanizeTime, humanizeDate, getRoutePeriod};
+export {isNull, filterPoints, pastFilter, futureFilter, getRandomInteger, getRandomElement, humanizeDay, humanizeTime, humanizeDate, getRoutePeriod, getEmptyDate, getPeriod};

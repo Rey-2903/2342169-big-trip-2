@@ -27,24 +27,18 @@ const getOffers = (checkedOffers, allOffers) => {
   }
 
   return (`<section class="event__section  event__section--offers">
-           <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-           <div class="event__available-offers">
-             ${fillOffersList(checkedOffers, allOffers)}
-           </div>
+             <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+             <div class="event__available-offers">${fillOffersList(checkedOffers, allOffers)}</div>
            </section>`);
 };
 
 const getAvailableDestinations = (destinations) => {
   let values = '';
-
   destinations.forEach((item) => {
     values += `<option value='${item.name}'></option>`;
   });
 
-  return (
-    `<datalist id="destination-list-1">
-      ${values}
-    </datalist>`);
+  return (`<datalist id="destination-list-1">${values}</datalist>`);
 };
 
 const getDestinationsList = (thisDestination, destinations, type) => {
@@ -53,9 +47,7 @@ const getDestinationsList = (thisDestination, destinations, type) => {
 
   return(
     `<div class="event__field-group  event__field-group--destination">
-      <label class="event__label  event__type-output" for="event-destination-1">
-        ${type}
-      </label>
+      <label class="event__label  event__type-output" for="event-destination-1">${type}</label>
       <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value='${thisDestination}' list="destination-list-1">
       ${getAvailableDestinations(allDestinatioins)}
     </div>`);
@@ -74,9 +66,7 @@ const getPhotosBlock = (items) => {
 
   return (
     `<div class="event__photos-container">
-      <div class="event__photos-tape">
-        ${photos}
-      </div>
+      <div class="event__photos-tape">${photos}</div>
     </div>`);
 };
 

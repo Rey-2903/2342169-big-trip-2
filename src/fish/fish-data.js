@@ -1,6 +1,6 @@
 import { DESCRIPTIONS, DESTINATIONS, TYPES, Prices, NumberServices } from './const.js';
 import { generatePictures } from './image.js';
-import { getRandomNumber, getRandomElement, filterPoints } from '../utils.js';
+import { getRandomInteger, getRandomElement, filterPoints } from '../utils.js';
 import { generateOffersByType} from './list-offers.js';
 import {nanoid} from 'nanoid';
 import dayjs from 'dayjs';
@@ -10,11 +10,12 @@ export const getDate = (day1 = dayjs()) =>{
   const allHours = 24;
   const allMinutes = 60;
 
-  const gapD = getRandomNumber(0, allDays);
-  const gapH = getRandomNumber(0, allHours);
-  const gapM = getRandomNumber(0, allMinutes);
+  const gapD = getRandomInteger(0, allDays);
+  const gapH = getRandomInteger(0, allHours);
+  const gapM = getRandomInteger(0, allMinutes);
+  const res = dayjs(day1).add(gapD, 'day').add(gapH, 'hour').add(gapM, 'minute').toDate();
 
-  return dayjs(day1).add(gapD, 'day').add(gapH, 'hour').add(gapM, 'minute').toDate();
+  return res;
 };
 
 export const getDestination = (id) => ({
@@ -27,14 +28,15 @@ export const getDestination = (id) => ({
 export const getForm = () => {
   const dateFrom = getDate();
   const type = getRandomElement(TYPES);
-  const destinations = Array.from({length: DESTINATIONS.length}, (value, index) => getDestination(index));
+  const leng = DESTINATIONS.length;
+  const destinations = Array.from({length: leng}, (value, index) => getDestination(index));
 
   return ({
-    'basePrice': getRandomNumber(Prices.MIN, Prices.MAX),
+    'basePrice': getRandomInteger(Prices.MIN, Prices.MAX),
     dateFrom,
     'dateTo': getDate(dateFrom),
     'destination': getRandomElement(destinations).id,
-    'isFavorite': Boolean(getRandomNumber(0,1)),
+    'isFavorite': Boolean(getRandomInteger(0,1)),
     'offers': generateOffersByType(type, NumberServices.MIN, NumberServices.MAX),
     type,
   });
@@ -52,15 +54,16 @@ export function getFilter(points) {
 export const getPoint = () => {
   const type = getRandomElement(TYPES);
   const dateFrom = getDate();
-  const destinations = Array.from({length: DESTINATIONS.length}, (value, index) => getDestination(index));
+  const leng = DESTINATIONS.length;
+  const destinations = Array.from({length: leng}, (value, index) => getDestination(index));
 
   return ({
-    'basePrice': getRandomNumber(Prices.MIN, Prices.MAX),
+    'basePrice': getRandomInteger(Prices.MIN, Prices.MAX),
     dateFrom,
     'dateTo': getDate(dateFrom),
     'destination': getRandomElement(destinations).id,
     'id': nanoid(),
-    'isFavourite': Boolean(getRandomNumber(0,1)),
+    'isFavourite': Boolean(getRandomInteger(0,1)),
     'offers': generateOffersByType(type),
     type,
   });
