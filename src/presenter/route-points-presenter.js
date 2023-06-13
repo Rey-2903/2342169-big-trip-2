@@ -38,8 +38,8 @@ export default class RoutePointsPresenter {
       render(this.#eventComp, this.#eventsList);
       return;
     }
-    if (this.#mode === MODESTYPES.DEFAULT) { replace(this.#eventComp, prevEventComp); }
     if (this.#mode === MODESTYPES.EDITING) { replace(this.#editingEvent, prevEditingEvent);}
+    if (this.#mode === MODESTYPES.DEFAULT) { replace(this.#eventComp, prevEventComp); }
 
     remove(prevEventComp);
     remove(prevEditingEvent);
@@ -94,7 +94,5 @@ export default class RoutePointsPresenter {
     document.addEventListener('keydown', this.#handleEscKeyDown);
   };
 
-  #handleStarClick = () => {
-    this.#changeData({...this.#point, isFavourite: !this.#point.isFavourite});
-  };
+  #handleStarClick = () => { this.#changeData({...this.#point, isFavourite: !this.#point.isFavourite}); };
 }
