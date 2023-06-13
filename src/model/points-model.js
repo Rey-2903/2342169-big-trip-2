@@ -1,11 +1,10 @@
-import { getPoint } from '../fish/fish-data';
-import { COUNT } from '../fish/const.js';
+import { getPoints } from '../fish/fish-data';
 
 export default class PointsModel{
   #points = null;
 
-  constructor (){
-    this.#points = Array.from({length: COUNT}, getPoint);
+  constructor () {
+    this.#points = getPoints();
   }
 
   get points () { return this.#points;}

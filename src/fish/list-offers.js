@@ -1,20 +1,19 @@
-import { getRandomInteger, getRandomElement } from '../utils.js';
-import { OFFERS, Prices, NumberServices, TYPES } from './const.js';
+import { getRandomInteger } from '../utils';
+import { COST, TRIPTYPES, TYPESLENG, OFFERS, OFFERSLENG } from './const.js';
 
-const leng = TYPES.length;
-
-const getOffer = (id) => ({
-  'id': id,
-  'title': getRandomElement(OFFERS),
-  'price': getRandomInteger(Prices.MIN, Prices.MAX),
+const getOffers = (id) => ({
+  id: id,
+  title: OFFERS[getRandomInteger(0, OFFERSLENG - 1)],
+  price: getRandomInteger(COST.MINIM, COST.MAXIM),
 });
 
-
-const generateOffersByType = (typeId, min = NumberServices.MIN, max = NumberServices.MAX) => ({
-  'type': TYPES[typeId],
-  'offers': Array.from({length: getRandomInteger(min, max)}, (value, id) => getOffer(id)),
+const getOffersEditByType = (type, isEmpty) => ({
+  type: TRIPTYPES[type],
+  offers: isEmpty === false
+    ? []
+    : Array.from({length: getRandomInteger(0, 6)}, (value, id) => getOffers(id, TRIPTYPES[type])),
 });
 
-const getOffersByType = (type) => Array.from({length: leng}, (value, id) => generateOffersByType(id)).find((item) => item.type === type).offers;
+const getOffersByAllTypes = () => Array.from({length: TYPESLENG}, (value, id) => getOffersEditByType(id));
 
-export {generateOffersByType, getOffersByType};
+export { getOffersEditByType, getOffersByAllTypes };

@@ -1,17 +1,18 @@
-import CardPointsView from '../view/card-points-view';
-import EditFormView from '../view/edit-form-view';
-import {isNull} from '../utils';
-import {PointModes} from '../fish/const';
+import CardPointsView from '../view/card-points-view.js';
+import EditFormView from '../view/edit-form-view.js';
+import { isNull } from '../utils';
+import { MODESTYPES } from '../fish/const';
 import { render, replace, remove } from '../framework/render.js';
 
 export default class RoutePointsPresenter {
   #eventsList = null;
   #point = null;
-  #pastPoint = null;
-  #editingPoint = null;
+  #eventComp = null;
+  #editingEvent = null;
   #changeData = null;
   #changeMode = null;
-  #pointModes = PointModes.DEFAULT;
+
+  #mode = MODESTYPES.DEFAULT;
 
   constructor (eventsList, changeData, changeMode) {
     this.#eventsList = eventsList;
@@ -19,85 +20,81 @@ export default class RoutePointsPresenter {
     this.#changeMode = changeMode;
   }
 
-  init = (point, destinations) => {
+  init = (point, routePoint, offers) => {
     this.#point = point;
 
-    const pastPoint = this.#pastPoint;
-    const editingPoint = this.#editingPoint;
+    const prevEventComp = this.#eventComp;
+    const prevEditingEvent = this.#editingEvent;
 
-    this.#pastPoint = new CardPointsView(point, destinations);
-    this.#editingPoint = new EditFormView(point, destinations);
+    this.#eventComp = new CardPointsView(point, routePoint, offers);
+    this.#editingEvent = new EditFormView(point, routePoint, offers);
 
-    this.#pastPoint.handlerEditFormButton(this.#buttonClickHandler);
-    this.#pastPoint.starInstallationHandler(this.#starClick);
-    this.#editingPoint.submittingForm(this.#submittingEditForm);
-    this.#editingPoint.closingForm(this.#closingForm);
+    this.#eventComp.setHandlerEditClick(this.#handleEditClick);
+    this.#eventComp.setHandlerStarClick(this.#handleStarClick);
+    this.#editingEvent.setFormSubmitHandler(this.#handleFormSubmit);
+    this.#editingEvent.setFormCloseHandler(this.#closingEditForm);
 
-    if (isNull(pastPoint, editingPoint)) {
-      render(this.#pastPoint, this.#eventsList);
+    if (isNull(prevEventComp, prevEditingEvent)) {
+      render(this.#eventComp, this.#eventsList);
       return;
     }
+    if (this.#mode === MODESTYPES.DEFAULT) { replace(this.#eventComp, prevEventComp); }
+    if (this.#mode === MODESTYPES.EDITING) { replace(this.#editingEvent, prevEditingEvent);}
 
-    if (this.#pointModes === PointModes.EDITING) {
-      replace(this.#editingPoint, editingPoint);
-    }
-
-    if (this.#pointModes === PointModes.DEFAULT) {
-      replace(this.#pastPoint, pastPoint);
-    }
-
-    remove(pastPoint);
-    remove(editingPoint);
+    remove(prevEventComp);
+    remove(prevEditingEvent);
   };
 
-  resetView = () => {
-    if (this.#pointModes !== PointModes.DEFAULT) {
+  zeroingView = () => {
+    if (this.#mode !== MODESTYPES.DEFAULT) {
       this.#replaceFormEditPoint();
+      this.#editingEvent.reset(this.#point);
     }
   };
 
   destroy = () => {
-    remove(this.#pastPoint);
-    remove(this.#editingPoint);
+    remove(this.#eventComp);
+    remove(this.#editingEvent);
   };
 
   #replacePointEditForm = () => {
-    replace(this.#editingPoint, this.#pastPoint);
-
+    replace(this.#editingEvent, this.#eventComp);
     this.#changeMode();
-    this.#pointModes = PointModes.EDITING;
+    this.#mode = MODESTYPES.EDITING;
   };
 
   #replaceFormEditPoint = () => {
-    replace(this.#pastPoint, this.#editingPoint);
-    this.#pointModes = PointModes.DEFAULT;
+    replace(this.#eventComp, this.#editingEvent);
+    this.#mode = MODESTYPES.DEFAULT;
   };
 
-  #onEscKeyDown = (evt) => {
-    if (evt.key === 'Escape' || evt.key === 'Esc') {
-      evt.preventDefault();
+  #handleEscKeyDown = (i) => {
+    if (i.key === 'Escape' || i.key === 'Esc') {
+      i.preventDefault();
+      this.#editingEvent.reset(this.#point);
       this.#replaceFormEditPoint();
-      document.removeEventListener('keydown', this.#onEscKeyDown);
+      document.removeEventListener('keydown', this.#handleEscKeyDown);
     }
   };
 
-  #buttonClickHandler = () => {
-    this.#replacePointEditForm();
-    document.addEventListener('keydown', this.#onEscKeyDown);
-  };
-
-  #submittingEditForm = (point) => {
+  #handleFormSubmit = (point) => {
     this.#changeData(point);
     this.#replaceFormEditPoint();
-    document.removeEventListener('keydown', this.#onEscKeyDown);
+    document.removeEventListener('keydown', this.#handleEscKeyDown);
   };
 
-  #closingForm = () => {
+  #closingEditForm = () => {
+    this.#editingEvent.reset(this.#point);
     this.#replaceFormEditPoint();
-    document.removeEventListener('keydown', this.#onEscKeyDown);
+    document.removeEventListener('keydown', this.#handleEscKeyDown);
   };
 
-  #starClick = () => {
+  #handleEditClick = () => {
+    this.#replacePointEditForm();
+    document.addEventListener('keydown', this.#handleEscKeyDown);
+  };
+
+  #handleStarClick = () => {
     this.#changeData({...this.#point, isFavourite: !this.#point.isFavourite});
   };
 }

@@ -1,4 +1,4 @@
-import AbstractView from '../framework/view/abstract-view';
+import AbstractView from '../framework/view/abstract-view.js';
 
 const creatingListFiltersItemTemplate = (filter, isChecked) => {
   const {name, isPoints } = filter;
@@ -18,12 +18,11 @@ const creatingListFiltersItemTemplate = (filter, isChecked) => {
   );
 };
 
-const creatingFiltersTemplate = (filters) => {
-  const item = Array.from(filters).map((name, isPoints) => creatingListFiltersItemTemplate(name, isPoints)).join('');
-
-  return (
+const creatingFiltersTemplate = (filterItems) => {
+  const filterItemsTemplate = Array.from(filterItems).map((name, isPoints) => creatingListFiltersItemTemplate (name, isPoints)).join('');
+  return(
     `<form class="trip-filters" action="#" method="get">
-      ${item}
+      ${filterItemsTemplate}
       <button class="visually-hidden" type="submit">Accept filter</button>
     </form>`
   );
@@ -37,7 +36,5 @@ export default class FiltersView extends AbstractView {
     this.#filters = filters;
   }
 
-  get template () {
-    return creatingFiltersTemplate(this.#filters);
-  }
+  get template () { return creatingFiltersTemplate(this.#filters); }
 }

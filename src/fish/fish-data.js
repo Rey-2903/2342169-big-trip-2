@@ -1,70 +1,104 @@
-import { DESCRIPTIONS, DESTINATIONS, TYPES, Prices, NumberServices } from './const.js';
-import { generatePictures } from './image.js';
-import { getRandomInteger, getRandomElement, filterPoints } from '../utils.js';
-import { generateOffersByType} from './list-offers.js';
-import {nanoid} from 'nanoid';
+import { getRandomInteger, getRandomElement } from '../utils';
+import { getOffersEditByType} from './list-offers.js';
+import { filteringEvents } from '../utils';
+import {
+  DESCRIPTIONS,
+  TRIPTYPES,
+  TYPESLENG,
+  COST,
+  DESCRLENG,
+  ROUTEPOINTS,
+  ROUTEPOINTSLENG,
+  ALLDAYS,
+  ALLHOURS,
+  ALLMINUTES,
+  IMAGEDESCR,
+  IMAGEREF,
+  POINTSNUMBER
+} from './const';
+import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';
 
-export const getDate = (day1 = dayjs()) =>{
-  const allDays = 7;
-  const allHours = 24;
-  const allMinutes = 60;
 
-  const gapD = getRandomInteger(0, allDays);
-  const gapH = getRandomInteger(0, allHours);
-  const gapM = getRandomInteger(0, allMinutes);
-  const res = dayjs(day1).add(gapD, 'day').add(gapH, 'hour').add(gapM, 'minute').toDate();
+export const getDate = (date = dayjs()) => {
+  const gapD = getRandomInteger(0, ALLDAYS);
+  const gapH = getRandomInteger(0, ALLHOURS);
+  const gapM = getRandomInteger(0, ALLMINUTES);
 
-  return res;
+  return dayjs(date)
+    .add(gapD, 'day')
+    .add(gapH, 'hour')
+    .add(gapM, 'minute')
+    .toDate();
 };
 
-export const getDestination = (id) => ({
-  'id': id,
-  'description': getRandomElement(DESCRIPTIONS),
-  'name': DESTINATIONS[id],
-  'pictures': generatePictures(),
+
+export const getImage = () => {
+  const isPictures = Boolean(getRandomInteger(0, 1));
+  if (!isPictures){
+    return null;
+  }
+  return Array.from({length: 5}, () => ({
+    src: `${IMAGEREF}${getRandomInteger(0, 100)}`,
+    description: getRandomElement(IMAGEDESCR),
+  }));
+};
+
+
+export const getRoutePoint = (id) => ({
+  id: id,
+  description: DESCRIPTIONS[getRandomInteger(0, DESCRLENG)],
+  name: ROUTEPOINTS[getRandomInteger(0, ROUTEPOINTSLENG)],
+  pictures: getImage(),
 });
 
-export const getForm = () => {
+
+export const getRoutePointModel = () => Array.from({length: ROUTEPOINTSLENG},(value, index) => getRoutePoint(index));
+
+
+export const getEditForm = () => {
   const dateFrom = getDate();
-  const type = getRandomElement(TYPES);
-  const leng = DESTINATIONS.length;
-  const destinations = Array.from({length: leng}, (value, index) => getDestination(index));
+  const type = getRandomElement(TRIPTYPES);
 
   return ({
-    'basePrice': getRandomInteger(Prices.MIN, Prices.MAX),
+    basePrice: getRandomInteger(COST.MINIM, COST.MAXIM),
     dateFrom,
-    'dateTo': getDate(dateFrom),
-    'destination': getRandomElement(destinations).id,
-    'isFavorite': Boolean(getRandomInteger(0,1)),
-    'offers': generateOffersByType(type, NumberServices.MIN, NumberServices.MAX),
+    dateTo: getDate(dateFrom),
+    destination: getRandomElement(Array.from({length: ROUTEPOINTSLENG}, (value, index) => getRoutePoint(index))).id,
+    isFavorite: Boolean(getRandomInteger(0, 1)),
+    offers: getOffersEditByType(type, 0, 6),
     type,
   });
 };
 
-export function getFilter(points) {
-  return Object.entries(filterPoints).map(
-    ([name, filteredPoints]) => ({
+
+function getFilter(points) {
+  return Object.entries(filteringEvents).map(
+    ([name, filtPoints]) => ({
       name: name,
-      isPoints: filteredPoints(points).length > 0,
+      isPoints: filtPoints(points).length > 0,
     }),
   );
 }
 
+export {getFilter};
+
+
 export const getPoint = () => {
-  const type = getRandomElement(TYPES);
+  const type = TRIPTYPES[getRandomInteger(0, TYPESLENG - 1)];
   const dateFrom = getDate();
-  const leng = DESTINATIONS.length;
-  const destinations = Array.from({length: leng}, (value, index) => getDestination(index));
 
   return ({
-    'basePrice': getRandomInteger(Prices.MIN, Prices.MAX),
+    basePrice: getRandomInteger(COST.MINIM, COST.MAXIM),
     dateFrom,
-    'dateTo': getDate(dateFrom),
-    'destination': getRandomElement(destinations).id,
-    'id': nanoid(),
-    'isFavourite': Boolean(getRandomInteger(0,1)),
-    'offers': generateOffersByType(type),
+    dateTo: getDate(dateFrom),
+    destination: getRandomElement(Array.from({length: ROUTEPOINTSLENG}, (value, index) => getRoutePoint(index))).id,
+    id: nanoid(),
+    isFavourite: Boolean(getRandomInteger(0, 1)),
+    offers: getOffersEditByType(getRandomInteger(0, TYPESLENG - 1), getRandomInteger(0, TYPESLENG) > TYPESLENG - 3),
     type,
   });
 };
+
+
+export const getPoints = () => Array.from({length: POINTSNUMBER}, getPoint);
