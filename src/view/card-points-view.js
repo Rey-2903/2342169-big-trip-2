@@ -1,58 +1,50 @@
-import AbstractView from '../framework/view/abstract-view';
-import { humanizeDay, humanizeTime, getRoutePeriod } from '../utils.js';
-import { getOffersByType } from '../fish/list-offers.js';
+import { daysHumanize, timeHumanize, getTravelPeriod, getOffersByType, isZero } from '../utils';
+import AbstractView from '../framework/view/abstract-view.js';
 import ListOffersView from './list-offers-view.js';
 
-const getOffers = (chooseElement, allElement) => {
-  if (allElement.length === 0) {
-    return '';
-  }
+const getOffersList = (reliableOffers, allOffers) => {
+  if (isZero(reliableOffers, allOffers)) { return ''; }
   let offers = '';
-
-  allElement.forEach((item) => {
-    if (chooseElement.find((offer) => offer.id === item.id)){
+  allOffers.offers.forEach((offer) => {
+    if (reliableOffers.find((checkedOffer) => checkedOffer.id === offer.id)){
       offers += `<li class="event__offer">
-      <span class="event__offer-title">${item.title}</span>
-      &plus;&euro;&nbsp;
-      <span class="event__offer-price">${item.price}</span>
-    </li>`;
+                  <span class="event__offer-title">${offer.title}</span>
+                  &plus;&euro;&nbsp;
+                  <span class="event__offer-price">${offer.price}</span>
+                </li>`;
     }
   });
 
   return new ListOffersView(offers).template;
 };
 
-const creatingCardPointTemplate = (point, availablePoints) => {
+const creatingCardPointTemplate = (point, possibleRoutePoints , allOffers) => {
   const {basePrice, dateFrom, dateTo, destination, isFavourite, offers, type} = point;
   const star = isFavourite ? 'event__favorite-btn--active' : '';
-  const allOffers = getOffers(offers.offers, getOffersByType(type));
-  const date = humanizeDay(dateFrom);
-  const datesFrom = humanizeTime(dateFrom);
-  const datesTo = humanizeTime(dateTo);
-  const duration = getRoutePeriod(dateFrom, dateTo);
-  const location = availablePoints.find((item) => item.id === destination);
+  const offersList = getOffersList(offers.offers, getOffersByType(allOffers, type));
+  const currentRoutePoint = possibleRoutePoints.find((item) => item.id === destination);
 
   return (
     `<li class="trip-events__item">
       <div class="event">
-        <time class="event__date" datetime=${dateFrom}>${date}</time>
+        <time class="event__date" datetime=${dateFrom}>${daysHumanize(dateFrom)}</time>
         <div class="event__type">
           <img class="event__type-icon" width="42" height="42" src="img/icons/${type}.png" alt="Event type icon">
       </div>
-      <h3 class="event__title">${type} ${location.name}</h3>
+      <h3 class="event__title">${type} ${currentRoutePoint.name}</h3>
       <div class="event__schedule">
         <p class="event__time">
-          <time class="event__start-time" datetime=${dateFrom}>${datesFrom}</time>
+          <time class="event__start-time" datetime=${dateFrom}>${timeHumanize(dateFrom)}</time>
           &mdash;
-          <time class="event__end-time" datetime=${dateTo}>${datesTo}</time>
+          <time class="event__end-time" datetime=${dateTo}>${timeHumanize(dateTo)}</time>
         </p>
-        <p class="event__duration">${duration}</p>
+        <p class="event__duration">${getTravelPeriod(dateFrom, dateTo)}</p>
       </div>
       <p class="event__price">
         &euro;&nbsp;<span class="event__price-value">${basePrice}</span>
       </p>
       <h4 class="visually-hidden">Offers:</h4>
-      ${allOffers}
+      ${offersList}
       <button class="event__favorite-btn ${star}" type="button">
         <span class="visually-hidden">Add to favorite</span>
         <svg class="event__favorite-icon" width="28" height="28" viewBox="0 0 28 28">
@@ -68,35 +60,35 @@ const creatingCardPointTemplate = (point, availablePoints) => {
 
 export default class CardPointsView extends AbstractView {
   #point = null;
-  #allDestinations = null;
+  #allRoutePoints = null;
+  #allOffers = null;
 
-  constructor(point, allDestinations){
+  constructor (point, allRoutePoints, allOffers) {
     super();
     this.#point = point;
-    this.#allDestinations = allDestinations;
+    this.#allRoutePoints = allRoutePoints;
+    this.#allOffers = allOffers;
   }
 
-  get template () {
-    return creatingCardPointTemplate(this.#point, this.#allDestinations);
-  }
+  get template () { return creatingCardPointTemplate (this.#point, this.#allRoutePoints, this.#allOffers); }
 
-  handlerEditFormButton = (callback) => {
+  setHandlerEditClick = (callback) => {
     this._callback.editClick = callback;
-    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#buttonClickHandler);
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handlerEditClick);
   };
 
-  #buttonClickHandler = (evt) => {
+  #handlerEditClick = (evt) => {
     evt.preventDefault();
     this._callback.editClick();
   };
 
-  starInstallationHandler = (callback) => {
-    this._callback.starClick = callback;
-    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#starClick);
+  setHandlerStarClick = (callback) => {
+    this._callback.favoriteClick = callback;
+    this.element.querySelector('.event__favorite-btn').addEventListener('click', this.#handlerStarInstallation);
   };
 
-  #starClick = (evt) => {
+  #handlerStarInstallation = (evt) => {
     evt.preventDefault();
-    this._callback.starClick();
+    this._callback.favoriteClick();
   };
 }

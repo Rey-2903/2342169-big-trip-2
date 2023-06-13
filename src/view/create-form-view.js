@@ -1,6 +1,8 @@
-import AbstractView from '../framework/view/abstract-view';
+import AbstractView from '../framework/view/abstract-view.js';
+import EditFormView from './edit-form-view';
+import { checkingInput } from '../utils';
 
-const creatingFormTemplate = () => (
+const createNewFormTemplate = () => (
   `<li class="trip-events__item">
     <form class="event event--edit" action="#" method="post">
       <header class="event__header">
@@ -165,7 +167,67 @@ const creatingFormTemplate = () => (
   </li>`);
 
 export default class CreateFormView extends AbstractView {
-  get template () {
-    return creatingFormTemplate();
+  _state = null;
+  #routePoints = null;
+  #allOffers = null;
+
+  constructor (allRoutePoints, allOffers) {
+    super();
+    this.#routePoints = allRoutePoints;
+    this.#allOffers = allOffers;
+    this.#handlersOther();
   }
+
+  get template () {
+    return createNewFormTemplate();
+  }
+
+  reset = (point) => {this.updateElement(EditFormView.parseFormToState(point));};
+
+  setFormSubmitHandler = (callback) => {
+    this._callback.formSubmit = callback;
+    this.element.addEventListener('submit', this.#formSubmitHandler);
+  };
+
+  #formSubmitHandler = (i) => {
+    i.preventDefault();
+    this._callback.formSubmit(EditFormView.parseStateToForm(this._state));
+  };
+
+  setFormCloseHandler = (callback) => {
+    this._callback.formClose = callback;
+    this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#formCloseHandler);
+  };
+
+  #formCloseHandler = (i) => {
+    i.preventDefault();
+    this._callback.formClose();
+  };
+
+  _restoreHandlers = () => {
+    this.#handlersOther();
+    this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setFormCloseHandler(this._callback.formClose);
+  };
+
+  #handlersOther = () => {
+    this.element.querySelector('.event__type-list').addEventListener('click', this.#handlerTypePoints);
+    if (this._state && this._state.offers.offers.length && this.#allOffers.length) {
+      this.element.querySelector('.event__available-offers').addEventListener('click', this.#handlerOffers);
+    }
+    this.element.querySelector('.event__input--destination').addEventListener('input', this.#handlerInputRoutePoint);
+  };
+
+  #handlerTypePoints = (i) => { if (checkingInput(i)) { this.updateElement({ type: i.target.value, }); } };
+  #handlerOffers = (i) => { if (checkingInput(i)) { /* empty */ } };
+
+  #handlerInputRoutePoint = (i) => {
+    i.preventDefault();
+    const newRoutePoint = this.#routePoints.find((item) => item.name === i.target.value);
+    if (newRoutePoint) { this.updateElement({ destination: newRoutePoint.id, }); }
+  };
+
+  static parseFormToState = (form) => ({...form});
+
+  static parseStateToForm = (state) => ({...state});
 }

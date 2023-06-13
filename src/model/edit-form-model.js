@@ -1,10 +1,10 @@
-import { getForm } from '../fish/fish-data';
+import { getEditForm } from '../fish/fish-data';
 
-export default class EditFormModel{
+export default class EditFormModel {
   #form = null;
 
   constructor () {
-    this.#form = getForm();
+    this.#form = getEditForm();
   }
 
   get form () { return this.#form;}

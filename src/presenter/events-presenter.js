@@ -1,138 +1,94 @@
-import ListEventsView from '../view/list-events-view';
-import NoPointsView from '../view/no-points-view';
-import SortView from '../view/sort-view';
-import RoutePointsPresenter from './route-points-presenter';
-import {SortTypes} from '../fish/const';
-import {getPeriod, getEmptyDate} from '../utils';
+import EventsView from '../view/list-points-view.js';
+import NoPointsView from '../view/no-points-view.js';
+import SortView from '../view/sort-view.js';
+import RoutePointsPresenter from './route-points-presenter.js';
 import { render, RenderPosition } from '../framework/render.js';
-import dayjs from 'dayjs';
+import { SORT } from '../fish/const';
+import { getNewElement, sortingByTime, sortingByPrice, sortingByDays } from '../utils';
 
-export default class TripEventsPresenter {
+export default class EventsPresenter {
   #eventsList = null;
-  #tripContainer = null;
+  #eventsContainer = null;
   #pointsModel = null;
   #points = null;
-  #destinations = null;
-  #tripEvents = [];
+  #routePoints = null;
+  #offers = null;
+
+  #defaultSorting = SORT.DAY;
+  #eventPoints = [];
+  #startPoint = [];
+
   #eventsPresenter = new Map();
-  #noPointsComp = new NoPointsView();
-  #sortComp = new SortView();
-  #nowTypeSort = SortTypes.PRICE;
-  #getedPoints = [];
+  #noPointsComponent = new NoPointsView();
+  #sorting = new SortView();
 
   constructor() {
-    this.#eventsList = new ListEventsView();
+    this.#eventsList = new EventsView();
   }
 
-  init (tripContainer, pointsModel, destinationsModel) {
-    this.#tripContainer = tripContainer;
+  init (eventsContainer, pointsModel, routePointsModel, offersModel) {
+    this.#eventsContainer = eventsContainer;
     this.#pointsModel = pointsModel;
-    this.#destinations = destinationsModel.destinations;
+    this.#routePoints = routePointsModel.routePoint;
+    this.#offers = offersModel.offers;
 
-    const defaultSort = [...this.#pointsModel.points].sort((p1, p2) => {
-      const weight = getEmptyDate(p1.dateFrom, p2.dateFrom);
-      const res = weight ?? dayjs(p1.dateFrom).diff(dayjs(p2.dateFrom));
-      return res;
-    });
-    this.#points = defaultSort;
-    this.#getedPoints = defaultSort;
+    const pointsSortedByDefault = [...this.#pointsModel.points].sort(sortingByDays);
+    this.#points = pointsSortedByDefault;
+    this.#startPoint = pointsSortedByDefault;
 
     if (this.#points.length === 0) {
-      this.#getNoPoints();
+      render(this.#noPointsComponent, this.#eventsContainer, RenderPosition.AFTERBEGIN);
     }
     else {
-      this.#getSort();
+      this.#renderingSorting();
       this.#drawingPoints();
     }
   }
 
   #drawingPoints = () => {
-    this.#getListPoints();
+    render(this.#eventsList, this.#eventsContainer);
+
     for (let i = 0; i < this.#points.length; i++) {
-      const pointPresenter = new RoutePointsPresenter(this.#eventsList.element, this.#changingPoint, this.#changingPointsModes);
-      pointPresenter.init(this.#points[i], this.#destinations);
-      this.#eventsPresenter.set(this.#points[i].id, pointPresenter);
+      const routePointPres = new RoutePointsPresenter(this.#eventsList.element, this.#editingPoint, () => {
+        this.#eventsPresenter.forEach((presenter) => presenter.zeroingView());
+      });
+      routePointPres.init(this.#points[i], this.#routePoints, this.#offers);
+      this.#eventsPresenter.set(this.#points[i].id, routePointPres);
     }
   };
 
-  #sortingPoints = (sortTypes) => {
-    switch (sortTypes) {
-      case SortTypes.DAY:
-        this.#points.sort((p1, p2) => {
-          const weight = getEmptyDate(p1.dateFrom, p2.dateFrom);
-          const res = weight ?? dayjs(p1.dateFrom).diff(dayjs(p2.dateFrom));
-          return res;
-        });
+  #editingPoint = (newPoint) => {
+    this.#eventPoints = getNewElement(this.#eventPoints, newPoint);
+    this.#startPoint = getNewElement(this.#startPoint, newPoint);
+    this.#eventsPresenter.get(newPoint.id).init(newPoint, this.#routePoints, this.#offers);
+  };
+
+  #changingSortingType = (sortType) => {
+    if (this.#defaultSorting === sortType) { return; }
+
+    switch (sortType) {
+      case SORT.PRICE:
+        this.#points.sort(sortingByPrice);
         break;
-      case SortTypes.TIME:
-        this.#points.sort((p1, p2) => {
-          const weight = getPeriod(p1, p2);
-          const t1 = dayjs(p1.dateTo).diff(dayjs(p1.dateFrom));
-          const t2 = dayjs(p2.dateTo).diff(dayjs(p2.dateFrom));
-          const res = weight ?? t2 - t1;
-          return res;
-        });
+      case SORT.TIME:
+        this.#points.sort(sortingByTime);
         break;
-      default: this.#points.sort((p1, p2) => p2.basePrice - p1.basePrice);
+      default:
+        this.#points.sort(sortingByDays);
     }
-    this.#nowTypeSort = sortTypes;
-  };
+    this.#defaultSorting = sortType;
 
-  #changingPointsModes = () => {
-    this.#eventsPresenter.forEach((presenter) => presenter.resetView());
-  };
-
-  #changingPoint = (upPoint) => {
-    this.#tripEvents = () => {
-      const index = this.#tripEvents.findIndex((item) => item.id === upPoint.id);
-      if (index === -1) {
-        return this.#tripEvents;
-      }
-      return [
-        ...this.#tripEvents.slice(0, index),
-        upPoint,
-        ...this.#tripEvents.slice(index + 1),
-      ];
-    };
-    this.#getedPoints = () => {
-      const index = this.#getedPoints.findIndex((item) => item.id === upPoint.id);
-      if (index === -1) {
-        return this.#getedPoints;
-      }
-      return [
-        ...this.#getedPoints.slice(0, index),
-        upPoint,
-        ...this.#getedPoints.slice(index + 1),
-      ];
-    };
-    this.#eventsPresenter.get(upPoint.id).init(upPoint, this.#destinations);
-  };
-
-  #changingSortingType = (sortTypes) => {
-    if (this.#nowTypeSort === sortTypes) {
-      return;
-    }
-
-    this.#sortingPoints(sortTypes);
-    this.#clearEventsList();
+    this.#resetListEvents();
     this.#drawingPoints();
   };
 
-  #clearEventsList = () => {
+  #renderingSorting = () => {
+    render(this.#sorting, this.#eventsContainer, RenderPosition.AFTERBEGIN);
+    this.#sorting.setSortHandler(this.#changingSortingType);
+  };
+
+  #resetListEvents = () => {
     this.#eventsPresenter.forEach((presenter) => presenter.destroy());
     this.#eventsPresenter.clear();
-  };
-
-  #getSort = () => {
-    render(this.#sortComp, this.#tripContainer, RenderPosition.AFTERBEGIN);
-    this.#sortComp.changingSortingType(this.#changingSortingType);
-  };
-
-  #getNoPoints = () => {
-    render(this.#noPointsComp, this.#tripContainer, RenderPosition.AFTERBEGIN);
-  };
-
-  #getListPoints = () => {
-    render(this.#eventsList, this.#tripContainer);
   };
 }
