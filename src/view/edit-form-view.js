@@ -64,7 +64,6 @@ const getRoutePointList = (routePoint) => {
 
 const creatingEditFormTemplate = (form, allRoutePoints, offersType) => {
   const {basePrice, dateFrom, dateTo, destination, offers, type} = form;
-  const offersList = getOffersList(offers.offers, offersType.offers);
   const curRoutePoint = allRoutePoints.find((item) => item.id === destination);
   const routePointList = numIsNull(curRoutePoint.description) && numIsNull(curRoutePoint.pictures) ? '' : getRoutePointList(curRoutePoint);
 
@@ -154,7 +153,7 @@ const creatingEditFormTemplate = (form, allRoutePoints, offersType) => {
       </button>
     </header>
     <section class="event__details">
-      ${offersList}
+      ${getOffersList(offers.offers, offersType.offers)}
       ${routePointList}
     </section>
   </form>

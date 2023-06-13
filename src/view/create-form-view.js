@@ -249,7 +249,7 @@ export default class CreateFormView extends AbstractView {
   };
 
   #setFinishDate = () => {
-    this.#finishDate = flatpickr( this.element.querySelector('#event-end-time-1'),
+    this.#finishDate = flatpickr(this.element.querySelector('#event-end-time-1'),
       {
         dateFormat: 'd/m/y H:i',
         enableTime: true,

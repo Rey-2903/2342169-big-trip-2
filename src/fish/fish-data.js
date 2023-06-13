@@ -20,24 +20,16 @@ import { nanoid } from 'nanoid';
 import dayjs from 'dayjs';
 
 
-export const getDate = (date = dayjs()) => {
-  const gapD = getRandomInteger(0, ALLDAYS);
-  const gapH = getRandomInteger(0, ALLHOURS);
-  const gapM = getRandomInteger(0, ALLMINUTES);
-
-  return dayjs(date)
-    .add(gapD, 'day')
-    .add(gapH, 'hour')
-    .add(gapM, 'minute')
-    .toDate();
-};
+export const getDate = (date = dayjs()) => dayjs(date)
+  .add(getRandomInteger(0, ALLDAYS), 'day')
+  .add(getRandomInteger(0, ALLHOURS), 'hour')
+  .add(getRandomInteger(0, ALLMINUTES), 'minute')
+  .toDate();
 
 
 export const getImage = () => {
   const isPictures = Boolean(getRandomInteger(0, 1));
-  if (!isPictures){
-    return null;
-  }
+  if (!isPictures) { return null; }
   return Array.from({length: 5}, () => ({
     src: `${IMAGEREF}${getRandomInteger(0, 100)}`,
     description: getRandomElement(IMAGEDESCR),

@@ -36,9 +36,7 @@ export default class EventsPresenter {
     this.#points = pointsSortedByDefault;
     this.#startPoint = pointsSortedByDefault;
 
-    if (this.#points.length === 0) {
-      render(this.#noPointsComponent, this.#eventsContainer, RenderPosition.AFTERBEGIN);
-    }
+    if (this.#points.length === 0) { render(this.#noPointsComponent, this.#eventsContainer, RenderPosition.AFTERBEGIN); }
     else {
       this.#renderingSorting();
       this.#drawingPoints();
@@ -47,7 +45,6 @@ export default class EventsPresenter {
 
   #drawingPoints = () => {
     render(this.#eventsList, this.#eventsContainer);
-
     for (let i = 0; i < this.#points.length; i++) {
       const routePointPres = new RoutePointsPresenter(this.#eventsList.element, this.#editingPoint, () => {
         this.#eventsPresenter.forEach((presenter) => presenter.zeroingView());
@@ -73,8 +70,7 @@ export default class EventsPresenter {
       case SORT.TIME:
         this.#points.sort(sortingByTime);
         break;
-      default:
-        this.#points.sort(sortingByDays);
+      default: this.#points.sort(sortingByDays);
     }
     this.#defaultSorting = sortType;
 

@@ -1,7 +1,7 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
 const creatingListFiltersItemTemplate = (filter, isChecked) => {
-  const {name, isPoints } = filter;
+  const { name, isPoints } = filter;
 
   return (
     `<div class="trip-filters__filter">
@@ -19,7 +19,7 @@ const creatingListFiltersItemTemplate = (filter, isChecked) => {
 };
 
 const creatingFiltersTemplate = (filterItems) => {
-  const filterItemsTemplate = Array.from(filterItems).map((name, isPoints) => creatingListFiltersItemTemplate (name, isPoints)).join('');
+  const filterItemsTemplate = Array.from(filterItems).map((name, isPoints) => creatingListFiltersItemTemplate(name, isPoints)).join('');
   return(
     `<form class="trip-filters" action="#" method="get">
       ${filterItemsTemplate}
