@@ -94,4 +94,3 @@ export const getPoint = () => {
 
 
 export const getPoints = () => Array.from({length: POINTSNUMBER}, getPoint);
-
