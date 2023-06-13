@@ -88,3 +88,4 @@ export default class EventsPresenter {
     this.#eventsPresenter.clear();
   };
 }
+
