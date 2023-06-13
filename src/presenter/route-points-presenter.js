@@ -96,3 +96,4 @@ export default class RoutePointsPresenter {
 
   #handleStarClick = () => { this.#changeData({...this.#point, isFavourite: !this.#point.isFavourite}); };
 }
+
