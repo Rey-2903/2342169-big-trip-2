@@ -7,12 +7,15 @@ const getOffers = (id) => ({
   price: getRandomInteger(COST.MINIM, COST.MAXIM),
 });
 
-const getOffersEditByType = (type, isEmpty) => ({
-  type: TRIPTYPES[type],
-  offers: isEmpty === false
-    ? []
-    : Array.from({length: getRandomInteger(0, 6)}, (value, id) => getOffers(id, TRIPTYPES[type])),
-});
+const getOffersEditByType = (type) => {
+  const leng = getRandomInteger(0, 6);
+  return {
+    type: TRIPTYPES[type],
+    offers: (getRandomInteger(0, TYPESLENG) > TYPESLENG - 3)
+      ? []
+      : Array.from({length: leng}, (value, id) => getOffers(id, TRIPTYPES[type])),
+  };
+};
 
 const getOffersByAllTypes = () => Array.from({length: TYPESLENG}, (value, id) => getOffersEditByType(id));
 
