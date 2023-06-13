@@ -33,6 +33,8 @@
   },
   "dependencies": {
     "copy-webpack-plugin": "11.0.0",
-    "dayjs": "^1.11.8"
+    "dayjs": "1.11.8",
+    "duration": "0.2.2",
+    "flatpickr": "4.6.13"
   }
 }

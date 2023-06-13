@@ -1,5 +1,7 @@
-import { checkingInput, dateHumanize, getOffersByType, numIsNull, slice } from '../utils';
+import {checkingInput, dateHumanize, getOffersByType, isNull, numIsNull, slice} from '../utils';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
 const getOffersList = (reliableOffers, allOffers) => {
   if (allOffers.length === 0) { return ''; }
@@ -145,7 +147,7 @@ const creatingEditFormTemplate = (form, allRoutePoints, offersType) => {
         <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value=${basePrice}>
       </div>
 
-      <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
+      <button class="event__save-btn  btn  btn--blue" type="submit" ${isNull(dateFrom, dateTo) ? 'disabled' : ''}>Save</button>
       <button class="event__reset-btn" type="reset">Delete</button>
       <button class="event__rollup-btn" type="button">
         <span class="visually-hidden">Open event</span>
@@ -164,25 +166,35 @@ export default class EditFormView extends AbstractStatefulView {
   _state = null;
   #routePoint = null;
   #allOffers = null;
+  #startingDate = null;
+  #finishDate = null;
   #offersType = null;
 
   constructor(form, allRoutePoint, allOffers){
     super();
-    this._state = EditFormView.parseFormToState(form);
+    this._state = EditFormView.parseFormState(form);
     this.#routePoint = allRoutePoint;
     this.#allOffers = allOffers;
-    this.#offersType = getOffersByType(allOffers, this._state.type);
+    this.#offersType = getOffersByType(this.#allOffers, this._state.type);
 
     this.#setOtherHandler();
+    this.#setStartingDate();
+    this.#setFinishDate();
   }
 
   get template () { return creatingEditFormTemplate(this._state, this.#routePoint, this.#offersType); }
 
-  reset = (point) => {
-    this.updateElement(
-      EditFormView.parseFormToState(point),
-    );
+  removeElement = () => {
+    super.removeElement();
+    if (this.#startingDate && this.#finishDate) {
+      this.#startingDate.destroy();
+      this.#finishDate.destroy();
+      this.#startingDate = null;
+      this.#finishDate = null;
+    }
   };
+
+  reset = (point) => { this.updateElement( EditFormView.parseFormState(point), ); };
 
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
@@ -191,7 +203,7 @@ export default class EditFormView extends AbstractStatefulView {
 
   #handlerSubmitForm = (i) => {
     i.preventDefault();
-    this._callback.formSubmit(EditFormView.parseStateToForm(this._state));
+    this._callback.formSubmit(EditFormView.parseStateForm(this._state));
   };
 
   setFormCloseHandler = (callback) => {
@@ -208,6 +220,31 @@ export default class EditFormView extends AbstractStatefulView {
     this.#setOtherHandler();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setFormCloseHandler(this._callback.formClose);
+    this.#setStartingDate();
+    this.#setFinishDate();
+  };
+
+  #setStartingDate = () => {
+    this.#startingDate = flatpickr( this.element.querySelector('#event-start-time-1'),
+      {
+        dateFormat: 'd/m/y H:i',
+        enableTime: true,
+        defaultDate: this._state.dateFrom,
+        onChange: ([date]) => { this.updateElement({ dateFrom: date, }); },
+      },
+    );
+  };
+
+  #setFinishDate = () => {
+    this.#finishDate = flatpickr( this.element.querySelector('#event-end-time-1'),
+      {
+        dateFormat: 'd/m/y H:i',
+        enableTime: true,
+        defaultDate: this._state.dateTo,
+        minDate: this._state.dateFrom,
+        onChange: ([date]) => { this.updateElement({ dateTo: date, }); },
+      },
+    );
   };
 
   #setOtherHandler = () => {
@@ -223,7 +260,7 @@ export default class EditFormView extends AbstractStatefulView {
   #handlerOffers = (i) => {
     if(checkingInput(i)) {
       i.preventDefault();
-      const news = this.#offersType.find((offer) => offer.id === Number(slice(i))).id;
+      const news = this.#offersType.find((offer) => offer.id === Number(i.target.id.slice(-1))).id;
       if (this._state.offers.includes(news)) { this._state.offers = this._state.offers.filter((n) => n !== Number(slice(i))); }
       else { this._state.offers.push(Number(slice(i))); }
       this.updateElement({ offers: this._state.offers, });
@@ -236,6 +273,6 @@ export default class EditFormView extends AbstractStatefulView {
     if (newRoutePoint) { this.updateElement({ destination: newRoutePoint.id, }); }
   };
 
-  static parseFormToState = (form) => ({...form});
-  static parseStateToForm = (state) => ({...state});
+  static parseFormState = (form) => ({...form});
+  static parseStateForm = (state) => ({...state});
 }

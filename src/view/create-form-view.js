@@ -1,6 +1,7 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import EditFormView from './edit-form-view';
-import { checkingInput } from '../utils';
+import {checkingInput, getOffersByType, slice} from '../utils';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 
 const createNewFormTemplate = () => (
   `<li class="trip-events__item">
@@ -170,19 +171,34 @@ export default class CreateFormView extends AbstractView {
   _state = null;
   #routePoints = null;
   #allOffers = null;
+  #startDate = null;
+  #finishDate = null;
+  #offersType = null;
 
-  constructor (allRoutePoints, allOffers) {
+  constructor (form, allRoutePoints, allOffers) {
     super();
+    this._state = CreateFormView.parseFormState(form);
     this.#routePoints = allRoutePoints;
     this.#allOffers = allOffers;
+    this.#offersType = getOffersByType(this.#allOffers, this._state.type);
     this.#handlersOther();
+    this.#setStartDate();
+    this.#setFinishDate();
   }
 
-  get template () {
-    return createNewFormTemplate();
-  }
+  get template () { return createNewFormTemplate(); }
 
-  reset = (point) => {this.updateElement(EditFormView.parseFormToState(point));};
+  removeElement = () => {
+    super.removeElement();
+    if (this.#startDate && this.#finishDate) {
+      this.#startDate.destroy();
+      this.#finishDate.destroy();
+      this.#startDate = null;
+      this.#finishDate = null;
+    }
+  };
+
+  reset = (point) => {this.updateElement(CreateFormView.parseFormState(point));};
 
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
@@ -191,7 +207,7 @@ export default class CreateFormView extends AbstractView {
 
   #formSubmitHandler = (i) => {
     i.preventDefault();
-    this._callback.formSubmit(EditFormView.parseStateToForm(this._state));
+    this._callback.formSubmit(CreateFormView.parseStateForm(this._state));
   };
 
   setFormCloseHandler = (callback) => {
@@ -208,18 +224,51 @@ export default class CreateFormView extends AbstractView {
     this.#handlersOther();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setFormCloseHandler(this._callback.formClose);
+    this.#setStartDate();
+    this.#setFinishDate();
   };
 
   #handlersOther = () => {
     this.element.querySelector('.event__type-list').addEventListener('click', this.#handlerTypePoints);
-    if (this._state && this._state.offers.offers.length && this.#allOffers.length) {
+    if (this.#offersType.offers.length > 0) {
       this.element.querySelector('.event__available-offers').addEventListener('click', this.#handlerOffers);
     }
     this.element.querySelector('.event__input--destination').addEventListener('input', this.#handlerInputRoutePoint);
   };
 
+  #setStartDate = () => {
+    this.#startDate = flatpickr(
+      this.element.querySelector('#event-start-time-1'),
+      {
+        dateFormat: 'd/m/y H:i',
+        enableTime: true,
+        defaultDate: this._state.dateFrom,
+        onChange: ([date]) => { this.updateElement({ dateFrom: date, }); },
+      },
+    );
+  };
+
+  #setFinishDate = () => {
+    this.#finishDate = flatpickr( this.element.querySelector('#event-end-time-1'),
+      {
+        dateFormat: 'd/m/y H:i',
+        enableTime: true,
+        defaultDate: this._state.dateTo,
+        minDate: this._state.dateFrom,
+        onChange: ([date]) => { this.updateElement({ dateTo: date, }); },
+      },
+    );
+  };
+
   #handlerTypePoints = (i) => { if (checkingInput(i)) { this.updateElement({ type: i.target.value, }); } };
-  #handlerOffers = (i) => { if (checkingInput(i)) { /* empty */ } };
+  #handlerOffers = (i) => {
+    if (checkingInput(i)) {
+      i.preventDefault();
+      if (this._state.offers.includes(Number(slice(i)))) { this._state.offers = this._state.offers.filter((id) => id !== Number(slice(i))); }
+      else { this._state.offers.push(Number(slice(i))); }
+      this.updateElement({ offers: this._state.offers, });
+    }
+  };
 
   #handlerInputRoutePoint = (i) => {
     i.preventDefault();
@@ -227,7 +276,6 @@ export default class CreateFormView extends AbstractView {
     if (newRoutePoint) { this.updateElement({ destination: newRoutePoint.id, }); }
   };
 
-  static parseFormToState = (form) => ({...form});
-
-  static parseStateToForm = (state) => ({...state});
+  static parseFormState = (form) => ({...form});
+  static parseStateForm = (state) => ({...state});
 }
