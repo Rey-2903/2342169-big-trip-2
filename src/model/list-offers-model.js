@@ -16,3 +16,4 @@ export default class ListOffersModel extends Observable {
     this._notify(update, newOf);
   }
 }
+

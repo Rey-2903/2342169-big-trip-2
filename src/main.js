@@ -24,3 +24,4 @@ const handleNewEventButtonClick = () => {
 newEvent.addEventListener('click', handleNewEventButtonClick);
 eventsPresenter.init();
 filterPresenter.init();
+

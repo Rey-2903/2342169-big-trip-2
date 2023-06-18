@@ -55,3 +55,4 @@ export default class FilterPresenter {
 
   #handleEvent = () => { this.init(); };
 }
+

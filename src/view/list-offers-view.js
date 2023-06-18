@@ -14,3 +14,4 @@ export default class ListOffersView extends AbstractView {
 
   get template () { return createListOffersTemplate(this.#offers); }
 }
+

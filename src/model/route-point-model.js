@@ -16,3 +16,4 @@ export default class RoutePointModel extends Observable {
     this._notify(update, getRoutePointModel);
   }
 }
+

@@ -28,3 +28,4 @@ const getOffersByAllTypes = () => Array.from({length: TRIP_TYPES_LENG}, (value, 
 const allOffersPoint = getOffersByAllTypes();
 
 export { allOffersPoint, getOffersEditByType };
+

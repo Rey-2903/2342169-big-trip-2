@@ -96,3 +96,4 @@ export default class CardPointsView extends AbstractView {
   };
 }
 
+
