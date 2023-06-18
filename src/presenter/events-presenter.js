@@ -140,3 +140,4 @@ export default class EventsPresenter {
     render(this.#noPointsComponent, this.#eventsContainer, RenderPosition.AFTERBEGIN);
   };
 }
+
