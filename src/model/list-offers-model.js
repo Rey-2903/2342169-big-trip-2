@@ -1,11 +1,18 @@
-import { getOffersByAllTypes } from '../fish/list-offers';
+import { allOffersPoint } from '../fish/list-offers.js';
+import Observable from '../framework/observable.js';
 
-export default class ListOffersModel {
+export default class ListOffersModel extends Observable {
   #offers = null;
 
   constructor () {
-    this.#offers = getOffersByAllTypes();
+    super();
+    this.#offers = allOffersPoint;
   }
 
-  get offers () {return this.#offers;}
+  get offers () { return this.#offers; }
+
+  setOffers(update, newOf) {
+    this.#offers = newOf;
+    this._notify(update, newOf);
+  }
 }

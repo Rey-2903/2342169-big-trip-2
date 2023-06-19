@@ -1,8 +1,8 @@
-const POINTSNUMBER = 10;
-const TRIPTYPES = ['taxi', 'bus', 'train', 'ship','drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
-const TYPESLENG = TRIPTYPES.length;
-const ROUTEPOINTS = ['Crimea', 'Paris', 'Peter', 'Sochi', 'Moscow', 'Istanbul', 'Tokyo', 'Rome', 'Dubai'];
-const ROUTEPOINTSLENG = ROUTEPOINTS.length;
+const POINTS_NUMBER = 10;
+const TRIP_TYPES = ['taxi', 'bus', 'train', 'ship','drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+const TRIP_TYPES_LENG = TRIP_TYPES.length;
+const ROUTE_POINTS = ['Crimea', 'Paris', 'Peter', 'Sochi', 'Moscow', 'Istanbul', 'Tokyo', 'Rome', 'Dubai'];
+const ROUTE_POINTS_LENG = ROUTE_POINTS.length;
 
 const DESCRIPTIONS = [
   'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
@@ -13,8 +13,7 @@ const DESCRIPTIONS = [
   'Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum.',
   'Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui.'
 ];
-
-const DESCRLENG = DESCRIPTIONS.length;
+const DESCR_LENG = DESCRIPTIONS.length;
 
 const OFFERS = [
   'Add a child safety seat',
@@ -32,16 +31,21 @@ const OFFERS = [
   'Carsharing',
   'Reserve tickets',
 ];
-const OFFERSLENG = OFFERS.length;
+const OFFERS_LENG = OFFERS.length;
 
-const IMAGEDESCR = ['Pleasant place', 'Beautiful views', 'Live picture', 'Vintage city'];
-const IMAGEREF = 'http://picsum.photos/248/152?r=';
-const COST = { MINIM: 150, MAXIM: 2500 };
-const ALLDAYS = 7;
-const ALLHOURS = 24;
-const ALLMINUTES = 60;
+const IMAGE_DESCR = ['Pleasant place', 'Beautiful views', 'Live picture', 'Vintage city'];
+const IMAGE_REF = 'http://picsum.photos/248/152?r=';
+const COST = {MINIM: 150, MAXIM: 2500};
+const ALL_DAYS = 7;
+const ALL_HOURS = 24;
+const ALL_MINUTES = 60;
 
-const FILTER = {
+const MODES_TYPES = {
+  DEFAULT: 'DEFAULT',
+  EDITING: 'EDITING',
+};
+
+const FILTERS = {
   EVERYTHING: 'everything',
   FUTURE: 'future',
   PAST: 'past',
@@ -55,28 +59,43 @@ const SORT = {
   OFFER: 'offer',
 };
 
-const MODESTYPES = {
-  DEFAULT: 'DEFAULT',
-  EDITING: 'EDITING',
+const ACTIONS_POINTS = {
+  UPDATE: 'UPDATE_POINT',
+  ADD: 'ADD_POINT',
+  DELETE: 'DELETE_POINT',
 };
 
+const UPDATE = {
+  PATCH: 'PATCH',
+  MINOR: 'MINOR',
+  MAJOR: 'MAJOR',
+};
+
+const ERROR_UPDATE = 'You cannot update a non-existent point';
+const ERROR_DELETE = 'You cannot delete a non-existent point';
+
+
 export {
-  TRIPTYPES,
-  TYPESLENG,
-  POINTSNUMBER,
-  ROUTEPOINTS,
-  ROUTEPOINTSLENG,
+  POINTS_NUMBER,
+  TRIP_TYPES,
+  TRIP_TYPES_LENG,
+  ROUTE_POINTS,
+  ROUTE_POINTS_LENG,
   DESCRIPTIONS,
-  DESCRLENG,
+  DESCR_LENG,
   OFFERS,
-  OFFERSLENG,
-  IMAGEDESCR,
-  IMAGEREF,
+  OFFERS_LENG,
+  IMAGE_DESCR,
+  IMAGE_REF,
   COST,
-  ALLDAYS,
-  ALLHOURS,
-  ALLMINUTES,
-  FILTER,
+  ALL_DAYS,
+  ALL_HOURS,
+  ALL_MINUTES,
+  MODES_TYPES,
   SORT,
-  MODESTYPES,
+  FILTERS,
+  ACTIONS_POINTS,
+  UPDATE,
+  ERROR_UPDATE,
+  ERROR_DELETE,
 };

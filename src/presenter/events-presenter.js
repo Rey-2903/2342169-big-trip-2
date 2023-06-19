@@ -2,93 +2,141 @@ import EventsView from '../view/list-points-view.js';
 import NoPointsView from '../view/no-points-view.js';
 import SortView from '../view/sort-view.js';
 import RoutePointsPresenter from './route-points-presenter.js';
-import { render, RenderPosition } from '../framework/render.js';
-import { SORT } from '../fish/const';
-import { getNewElement, sortingByTime, sortingByPrice, sortingByDays } from '../utils';
+import CreateFormPresenter from './create-form-presenter.js';
+import { render, RenderPosition, remove } from '../framework/render.js';
+import { SORT, ACTIONS_POINTS, UPDATE, FILTERS } from '../fish/const.js';
+import { sortingByTime, sortingByPrice, sortingByDays } from '../utils';
+import { filteringEvents } from '../utils';
 
 export default class EventsPresenter {
   #eventsList = null;
   #eventsContainer = null;
+  #createFormPresenter = null;
   #pointsModel = null;
-  #points = null;
-  #routePoints = null;
-  #offers = null;
-
-  #defaultSorting = SORT.DAY;
-  #eventPoints = [];
-  #startPoint = [];
-
+  #filtersModel = null;
+  #routePointModel = null;
+  #listOffersModel = null;
+  #noPointsComponent = null;
+  #sorting = null;
   #eventsPresenter = new Map();
-  #noPointsComponent = new NoPointsView();
-  #sorting = new SortView();
+  #defaultSort = SORT.DAY;
+  #defaultFilter = FILTERS.EVERYTHING;
 
-  constructor() {
+  constructor(eventsContainer, pointsModel, listOffersModel, routePointModel, filtersModel) {
     this.#eventsList = new EventsView();
-  }
-
-  init (eventsContainer, pointsModel, routePointsModel, offersModel) {
     this.#eventsContainer = eventsContainer;
     this.#pointsModel = pointsModel;
-    this.#routePoints = routePointsModel.routePoint;
-    this.#offers = offersModel.offers;
+    this.#filtersModel = filtersModel;
+    this.#routePointModel = routePointModel;
+    this.#listOffersModel = listOffersModel;
+    this.#createFormPresenter = new CreateFormPresenter(this.#eventsList.element, this.#handleViewAction, this.#routePointModel.destinations, this.#listOffersModel.offers);
+    this.#pointsModel.addObserver(this.#handlePoint);
+    this.#filtersModel.addObserver(this.#handlePoint);
+    this.#routePointModel.addObserver(this.#handlePoint);
+    this.#listOffersModel.addObserver(this.#handlePoint);
+  }
 
-    const pointsSortedByDefault = [...this.#pointsModel.points].sort(sortingByDays);
-    this.#points = pointsSortedByDefault;
-    this.#startPoint = pointsSortedByDefault;
+  init () { this.#darwingEvents(); }
 
-    if (this.#points.length === 0) {
-      render(this.#noPointsComponent, this.#eventsContainer, RenderPosition.AFTERBEGIN);
-    }
-    else {
-      this.#renderingSorting();
-      this.#drawingPoints();
+  createNewForm (callback) {
+    this.#defaultSort = SORT.DAY;
+    this.#filtersModel.setFilter(UPDATE.MAJOR, FILTERS.EVERYTHING);
+    this.#createFormPresenter.init(callback);
+  }
+
+  get points() {
+    this.#defaultFilter = this.#filtersModel.filter;
+    const filters = filteringEvents[this.#defaultFilter](this.#pointsModel.points);
+    switch (this.#defaultSort) {
+      case SORT.PRICE: return filters.sort(sortingByPrice);
+      case SORT.TIME: return filters.sort(sortingByTime);
+      default: return filters.sort(sortingByDays);
     }
   }
 
-  #drawingPoints = () => {
-    render(this.#eventsList, this.#eventsContainer);
+  get destinations() { return this.#routePointModel.destinations; }
+  get offers () { return this.#listOffersModel.offers; }
 
-    for (let i = 0; i < this.#points.length; i++) {
-      const routePointPres = new RoutePointsPresenter(this.#eventsList.element, this.#editingPoint, () => {
-        this.#eventsPresenter.forEach((presenter) => presenter.zeroingView());
-      });
-      routePointPres.init(this.#points[i], this.#routePoints, this.#offers);
-      this.#eventsPresenter.set(this.#points[i].id, routePointPres);
-    }
-  };
-
-  #editingPoint = (newPoint) => {
-    this.#eventPoints = getNewElement(this.#eventPoints, newPoint);
-    this.#startPoint = getNewElement(this.#startPoint, newPoint);
-    this.#eventsPresenter.get(newPoint.id).init(newPoint, this.#routePoints, this.#offers);
-  };
-
-  #changingSortingType = (sortType) => {
-    if (this.#defaultSorting === sortType) { return; }
-
-    switch (sortType) {
-      case SORT.PRICE:
-        this.#points.sort(sortingByPrice);
-        break;
-      case SORT.TIME:
-        this.#points.sort(sortingByTime);
-        break;
-      default:
-        this.#points.sort(sortingByDays);
-    }
-    this.#defaultSorting = sortType;
-
-    this.#resetListEvents();
-    this.#drawingPoints();
-  };
-
-  #renderingSorting = () => {
-    render(this.#sorting, this.#eventsContainer, RenderPosition.AFTERBEGIN);
-    this.#sorting.setSortHandler(this.#changingSortingType);
-  };
-
-  #resetListEvents = () => {
+  #clearEvents = ({resetSorting = false} = {}) => {
+    this.#createFormPresenter.destroy();
     this.#eventsPresenter.forEach((presenter) => presenter.destroy());
     this.#eventsPresenter.clear();
+    remove(this.#sorting);
+    if (this.#noPointsComponent) { remove(this.#noPointsComponent); }
+    if (resetSorting) { this.#defaultSort = SORT.DAY; }
+  };
+
+  #handleViewAction = (active, update, temp) => {
+    switch (active) {
+      case ACTIONS_POINTS.ADD:
+        this.#pointsModel.addEvent(update, temp);
+        break;
+      case ACTIONS_POINTS.DELETE:
+        this.#pointsModel.deleteEvent(update, temp);
+        break;
+      case ACTIONS_POINTS.UPDATE:
+        this.#pointsModel.updateEvent(update, temp);
+        break;
+    }
+  };
+
+  #handlePoint = (update, data) => {
+    switch (update) {
+      case UPDATE.MINOR:
+        this.#clearEvents();
+        this.#darwingEvents();
+        break;
+      case UPDATE.MAJOR:
+        this.#clearEvents({ resetSortType: true });
+        this.#darwingEvents();
+        break;
+      case UPDATE.PATCH:
+        this.#eventsPresenter.get(data.id).init(data, this.destinations, this.offers);
+        break;
+    }
+  };
+
+  #darwingEvents = () => {
+    const points = this.points;
+    const pointsCount = points.length;
+    if (pointsCount === 0) {
+      this.#darwingNoPoints();
+      return;
+    }
+    this.#darwingSortPoints();
+    render(this.#eventsList, this.#eventsContainer);
+    for (let i = 0; i < this.points.length; i++) {
+      const pointPresenter = new RoutePointsPresenter(this.#eventsList.element, this.#handleViewAction, () => {
+        this.#createFormPresenter.destroy();
+        this.#eventsPresenter.forEach((presenter) => presenter.zeroingView());
+      });
+      pointPresenter.init(this.points[i], this.destinations, this.offers);
+      this.#eventsPresenter.set(this.points[i].id, pointPresenter);
+    }
+  };
+
+  #darwingSortPoints = () => {
+    this.#sorting = new SortView(this.#defaultSort);
+    this.#sorting.setChangeSort((sort) => {
+      if (this.#defaultSort === sort) { return; }
+      switch (sort) {
+        case SORT.PRICE:
+          this.#pointsModel.points.sort(sortingByPrice);
+          break;
+        case SORT.TIME:
+          this.#pointsModel.points.sort(sortingByTime);
+          break;
+        default: this.#pointsModel.points.sort(sortingByDays);
+      }
+      this.#defaultSort = sort;
+      this.#clearEvents();
+      this.#darwingEvents();
+    });
+    render(this.#sorting, this.#eventsContainer, RenderPosition.AFTERBEGIN);
+  };
+
+  #darwingNoPoints = () => {
+    this.#noPointsComponent = new NoPointsView({ filterType: this.#defaultFilter, });
+    render(this.#noPointsComponent, this.#eventsContainer, RenderPosition.AFTERBEGIN);
   };
 }

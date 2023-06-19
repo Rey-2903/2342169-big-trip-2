@@ -1,79 +1,83 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
-import { FILTER } from './fish/const';
+import { FILTERS } from './fish/const.js';
 
-const getRandomInteger = (beginning, finish) => Math.round(Math.random() * (Math.max(beginning, finish) - Math.min(beginning,finish)) + Math.min(beginning,finish));
+const getRandomInteger = (begin, finish) => Math.round(Math.random() * (Math.max(begin, finish) - Math.min(begin, finish)) + Math.min(begin, finish));
 const getRandomElement = (i) => i[getRandomInteger(0, i.length - 1)];
+const getOffersByType = (offers, type) => offers.find((offer) => offer.type === type);
+const bigLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 const daysHumanize = (date) => dayjs(date).format('D MMMM');
 const timeHumanize = (date) => dayjs(date).format('HH:mm');
 const dateHumanize = (date) => dayjs(date).format('DD/MM/YY HH:mm');
-const parsDate = (dateFrom, dateTo) => dayjs.duration(dayjs(dateTo).diff(dateFrom)).format('DD HH mm').split(' ');
+const dateValue = (begin, finish) => dayjs(begin).isSame(finish, 'D');
 const checkingZerosDays = (days) => days !== '00';
 const checkingZerosHours = (hours, days) => hours !== '00' || (hours === '00' && checkingZerosDays(days));
-const numIsNull = (begin) => begin === null;
+const numIsNull = (num) => num === null;
+const notNumNull = (num) => num !== null;
+const isNull = (pastEventComp, pastEditingEvent) => pastEventComp === null || pastEditingEvent === null;
+const isInput = (num) => num === 'INPUT';
+const isNotInput = (num) => num !== 'INPUT';
+const isZero = (begin, finish) => begin === 0 || finish === 0;
+const zeroNum = (num) => num === 0;
+const slice = (i) => i.target.id.slice(-1);
 
 const getTravelPeriod = (dateFrom, dateTo) => {
-  const days = parsDate(dateFrom, dateTo)[0];
-  const hours = parsDate(dateFrom, dateTo)[1];
-  let travelPeriod = `${parsDate(dateFrom, dateTo)[2]}M`;
-  if (checkingZerosHours(hours, days)) { travelPeriod = `${hours}H ${travelPeriod}`; }
-  if (checkingZerosDays(days)) { travelPeriod = `${days}D ${travelPeriod}`; }
-
-  return travelPeriod;
+  const timeParts = dayjs.duration(dayjs(dateTo).diff(dateFrom)).format('DD HH mm').split(' ');
+  const days = timeParts[0];
+  const hours = timeParts[1];
+  let eventDuration = `${timeParts[2]}M`;
+  if (checkingZerosHours(hours, days)) {eventDuration = `${hours}H ${eventDuration}`; }
+  if (checkingZerosDays(days)) { eventDuration = `${days}D ${eventDuration}`; }
+  return eventDuration;
 };
 
-const getEmptyDate = (begin, finish) => {
-  if (numIsNull(begin) && numIsNull(finish)) { return 0; }
-  if (numIsNull(begin)) { return 1; }
-  if (numIsNull(finish)) { return -1; }
-
+const getEmptyDate = (dateA, dateB) => {
+  if (numIsNull(dateA) && numIsNull(dateB)) { return 0; }
+  if (numIsNull(dateA)) { return 1; }
+  if (numIsNull(dateB)) { return -1; }
   return null;
 };
 
+const getEmptyPeriod = (begin, finish) => getEmptyDate(begin.dateFrom, begin.dateTo) && getEmptyDate(finish.dateFrom, finish.dateTo);
 const sortingByDays = (begin, finish) => getEmptyDate(begin.dateFrom, finish.dateFrom) ?? dayjs(begin.dateFrom).diff(dayjs(finish.dateFrom));
-const sortingByTime = (begin, finish) => (getEmptyDate(begin.dateFrom, begin.dateTo) && getEmptyDate(finish.dateFrom, finish.dateTo)) ?? dayjs(finish.dateTo).diff(dayjs(finish.dateFrom)) - dayjs(begin.dateTo).diff(dayjs(begin.dateFrom));
+const sortingByTime = (begin, finish) => getEmptyPeriod(begin, finish) ?? dayjs(finish.dateTo).diff(dayjs(finish.dateFrom)) - dayjs(begin.dateTo).diff(dayjs(begin.dateFrom));
 const sortingByPrice = (begin, finish) => finish.basePrice - begin.basePrice;
-const getOffersByType = (offers, type) => offers.find((offer) => offer.type === type);
 
-const getNewElement = (el, newEl) => {
-  const ind = el.findIndex((item) => item.id === newEl.id);
-  if (ind === -1) { return el; }
-
-  return [...el.slice(0, ind), newEl, ...el.slice(ind + 1),];
-};
 
 const filteringEvents = {
-  [FILTER.EVERYTHING]: (events) => Array.from(events),
-  [FILTER.FUTURE]: (events) => Array.from(events).filter((event) => dayjs(event.dateFrom).isAfter(dayjs())),
-  [FILTER.PAST]: (events) => Array.from(events).filter((event) => dayjs(event.dateFrom).isBefore(dayjs()))
+  [FILTERS.EVERYTHING]: (points) => Array.from(points),
+  [FILTERS.FUTURE]: (points) => Array.from(points).filter((point) => dayjs(point.dateFrom).isAfter(dayjs())
+    || dayjs(point.dateFrom).isSame(dayjs(), 'D')
+    || dayjs(point.dateFrom).isBefore(dayjs()) && dayjs(point.dateTo).isAfter(dayjs())),
+  [FILTERS.PAST]: (points) => Array.from(points).filter((point) => dayjs(point.dateTo).isBefore(dayjs())
+    || dayjs(point.dateFrom).isBefore(dayjs())
+    && dayjs(point.dateTo).isAfter(dayjs()))
 };
-
-const isNull = (prevEventComp, prevEditingEvent) => prevEventComp === null || prevEditingEvent === null;
-const isZero = (reliableOffers, allOffers) => allOffers.length === 0 || reliableOffers.length === 0;
-const checkingInput = (i) => i.target.tagName === 'INPUT';
-const slice = (i) => i.target.id.slice(-1);
 
 export {
   getRandomInteger,
   getRandomElement,
+  getOffersByType,
+  bigLetter,
   daysHumanize,
   timeHumanize,
   dateHumanize,
-  parsDate,
+  dateValue,
   checkingZerosDays,
   checkingZerosHours,
   numIsNull,
+  notNumNull,
+  isNull,
+  isInput,
+  isNotInput,
+  isZero,
+  zeroNum,
+  slice,
   getTravelPeriod,
   getEmptyDate,
   sortingByDays,
   sortingByTime,
   sortingByPrice,
-  getNewElement,
-  getOffersByType,
-  isNull,
-  isZero,
-  checkingInput,
-  slice,
-  filteringEvents,
+  filteringEvents
 };

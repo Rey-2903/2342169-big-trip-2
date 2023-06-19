@@ -4,7 +4,6 @@ const creatingListEventsTemplate = () => (
   '<ul class="trip-events__list"></ul>'
 );
 
-export default class ListPointsView extends AbstractView {
-  get template () { return creatingListEventsTemplate (); }
+export default class EventsView extends AbstractView {
+  get template () { return creatingListEventsTemplate(); }
 }
-
