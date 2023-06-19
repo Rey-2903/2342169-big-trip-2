@@ -55,3 +55,4 @@ export default class Api extends ApiService {
     return transformation;
   };
 }
+

@@ -18,3 +18,4 @@ export default class ListOffersModel extends Observable {
 
   get offers () {return this.#offers;}
 }
+

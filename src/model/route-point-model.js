@@ -18,3 +18,4 @@ export default class RoutePointModel extends Observable {
     this._notify(UPDATE.INIT);
   };
 }
+

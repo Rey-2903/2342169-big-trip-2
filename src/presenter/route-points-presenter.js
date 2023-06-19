@@ -133,3 +133,4 @@ export default class RoutePointsPresenter {
     document.removeEventListener('keydown', this.#handleEscKeyDown);
   };
 }
+

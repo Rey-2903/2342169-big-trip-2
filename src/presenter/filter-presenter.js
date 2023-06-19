@@ -57,3 +57,4 @@ export default class FilterPresenter {
     this.#filtComp.setFilter(UPDATE.MAJOR, filterType);
   };
 }
+

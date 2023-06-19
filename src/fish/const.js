@@ -59,6 +59,7 @@ const MODES_TYPE = {
   EDITING: 'EDITING',
 };
 
+
 export {
   TRIP_TYPES,
   FILTERS,

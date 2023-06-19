@@ -34,3 +34,4 @@ listOffersModel.init().finally(() => {
     });
   });
 });
+

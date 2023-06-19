@@ -1,6 +1,7 @@
 import AbstractView from '../framework/view/abstract-view.js';
 import { NO_POINTS_TEXT} from '../fish/const.js';
 
+
 const createNoEventsTemplate = (filterType) => (
   `<p class="trip-events__msg">${NO_POINTS_TEXT[filterType]}</p>`);
 
@@ -14,3 +15,4 @@ export default class NoPointsView extends AbstractView {
 
   get template () { return createNoEventsTemplate(this.#filterType); }
 }
+
