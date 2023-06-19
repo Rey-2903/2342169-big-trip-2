@@ -264,3 +264,5 @@ export default class CreateFormView extends AbstractStatefulView {
   static parseFormState = (form) => ({...form});
   static parseStateForm = (state) => ({...state});
 }
+
+

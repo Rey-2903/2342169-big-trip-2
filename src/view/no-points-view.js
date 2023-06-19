@@ -21,3 +21,4 @@ export default class NoPointsView extends AbstractView {
 
   get template () { return createNoEventsTemplate(this.#filterType); }
 }
+

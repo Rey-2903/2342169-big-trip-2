@@ -36,7 +36,7 @@ export default class CreateFormPresenter {
 
   destroy = () => {
     if (numIsNull(this.#createForm)) { return; }
-    this.#deleteCallb();
+    this.#deleteCallb?.();
     remove(this.#createForm);
     this.#createForm = null;
     document.removeEventListener('keydown', this.#handleEscKeyDown);
@@ -60,3 +60,4 @@ export default class CreateFormPresenter {
     }
   };
 }
+

@@ -96,8 +96,8 @@ export default class RoutePointsPresenter {
 
   #handleSubmit = (update) => {
     const isMinorUpdate = !dateValue(this.#point.dateTo, update.dateTo)
-      || !dateValue(this.#point.dateFrom, update.dateFrom)
-      || this.#point.basePrice !== update.basePrice;
+    || !dateValue(this.#point.dateFrom, update.dateFrom)
+    || this.#point.basePrice !== update.basePrice;
     this.#changeData(ACTIONS_POINTS.UPDATE, isMinorUpdate ? UPDATE.MINOR : UPDATE.PATCH, update,);
     this.#replaceFormEditPoint();
   };
@@ -107,3 +107,4 @@ export default class RoutePointsPresenter {
     document.removeEventListener('keydown', this.#handleEscKeyDown);
   };
 }
+

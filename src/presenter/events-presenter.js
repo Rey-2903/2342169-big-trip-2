@@ -3,6 +3,7 @@ import NoPointsView from '../view/no-points-view.js';
 import SortView from '../view/sort-view.js';
 import RoutePointsPresenter from './route-points-presenter.js';
 import CreateFormPresenter from './create-form-presenter.js';
+import LoadingPointsView from '../view/loading-points-view.js';
 import { render, RenderPosition, remove } from '../framework/render.js';
 import { SORT, ACTIONS_POINTS, UPDATE, FILTERS } from '../fish/const.js';
 import { sortingByTime, sortingByPrice, sortingByDays } from '../utils';
@@ -21,6 +22,8 @@ export default class EventsPresenter {
   #eventsPresenter = new Map();
   #defaultSort = SORT.DAY;
   #defaultFilter = FILTERS.EVERYTHING;
+  #isLoading = true;
+  #loading = new LoadingPointsView();
 
   constructor(eventsContainer, pointsModel, listOffersModel, routePointModel, filtersModel) {
     this.#eventsList = new EventsView();
@@ -29,7 +32,7 @@ export default class EventsPresenter {
     this.#filtersModel = filtersModel;
     this.#routePointModel = routePointModel;
     this.#listOffersModel = listOffersModel;
-    this.#createFormPresenter = new CreateFormPresenter(this.#eventsList.element, this.#handleViewAction, this.#routePointModel.destinations, this.#listOffersModel.offers);
+    this.#createFormPresenter = new CreateFormPresenter(this.#eventsList.element, this.#handleViewAction, this.#routePointModel.routePoint, this.#listOffersModel.offers);
     this.#pointsModel.addObserver(this.#handlePoint);
     this.#filtersModel.addObserver(this.#handlePoint);
     this.#routePointModel.addObserver(this.#handlePoint);
@@ -54,7 +57,7 @@ export default class EventsPresenter {
     }
   }
 
-  get destinations() { return this.#routePointModel.destinations; }
+  get destinations() { return this.#routePointModel.routePoint; }
   get offers () { return this.#listOffersModel.offers; }
 
   #clearEvents = ({resetSorting = false} = {}) => {
@@ -62,7 +65,8 @@ export default class EventsPresenter {
     this.#eventsPresenter.forEach((presenter) => presenter.destroy());
     this.#eventsPresenter.clear();
     remove(this.#sorting);
-    if (this.#noPointsComponent) { remove(this.#noPointsComponent); }
+    remove(this.#loading);
+    this.#delEventsNoPoints();
     if (resetSorting) { this.#defaultSort = SORT.DAY; }
   };
 
@@ -93,10 +97,21 @@ export default class EventsPresenter {
       case UPDATE.PATCH:
         this.#eventsPresenter.get(data.id).init(data, this.destinations, this.offers);
         break;
+      case UPDATE.IN:
+        this.#isLoading = false;
+        remove(this.#loading);
+        this.#delEventsNoPoints();
+        this.#darwingEvents();
+        break;
     }
   };
 
   #darwingEvents = () => {
+    render(this.#eventsList, this.#eventsContainer);
+    if (this.#isLoading) {
+      render(this.#loading, this.#eventsContainer, RenderPosition.AFTERBEGIN);
+      return;
+    }
     const points = this.points;
     const pointsCount = points.length;
     if (pointsCount === 0) {
@@ -104,7 +119,6 @@ export default class EventsPresenter {
       return;
     }
     this.#darwingSortPoints();
-    render(this.#eventsList, this.#eventsContainer);
     for (let i = 0; i < this.points.length; i++) {
       const pointPresenter = new RoutePointsPresenter(this.#eventsList.element, this.#handleViewAction, () => {
         this.#createFormPresenter.destroy();
@@ -135,8 +149,11 @@ export default class EventsPresenter {
     render(this.#sorting, this.#eventsContainer, RenderPosition.AFTERBEGIN);
   };
 
+  #delEventsNoPoints = () => { if (this.#noPointsComponent) { remove(this.#noPointsComponent); } };
+
   #darwingNoPoints = () => {
     this.#noPointsComponent = new NoPointsView({ filterType: this.#defaultFilter, });
     render(this.#noPointsComponent, this.#eventsContainer, RenderPosition.AFTERBEGIN);
   };
 }
+

@@ -95,3 +95,5 @@ export default class CardPointsView extends AbstractView {
     this._callback.favoriteClick();
   };
 }
+
+

@@ -3,8 +3,6 @@ import duration from 'dayjs/plugin/duration';
 dayjs.extend(duration);
 import { FILTERS } from './fish/const.js';
 
-const getRandomInteger = (begin, finish) => Math.round(Math.random() * (Math.max(begin, finish) - Math.min(begin, finish)) + Math.min(begin, finish));
-const getRandomElement = (i) => i[getRandomInteger(0, i.length - 1)];
 const getOffersByType = (offers, type) => offers.find((offer) => offer.type === type);
 const bigLetter = (string) => string.charAt(0).toUpperCase() + string.slice(1);
 const daysHumanize = (date) => dayjs(date).format('D MMMM');
@@ -46,18 +44,16 @@ const sortingByPrice = (begin, finish) => finish.basePrice - begin.basePrice;
 
 
 const filteringEvents = {
-  [FILTERS.EVERYTHING]: (points) => Array.from(points),
-  [FILTERS.FUTURE]: (points) => Array.from(points).filter((point) => dayjs(point.dateFrom).isAfter(dayjs())
+  [FILTERS.EVERYTHING]: (points) => points === null ? [] : Array.from(points),
+  [FILTERS.FUTURE]: (points) => points === null ? [] : Array.from(points).filter((point) => dayjs(point.dateFrom).isAfter(dayjs())
     || dayjs(point.dateFrom).isSame(dayjs(), 'D')
     || dayjs(point.dateFrom).isBefore(dayjs()) && dayjs(point.dateTo).isAfter(dayjs())),
-  [FILTERS.PAST]: (points) => Array.from(points).filter((point) => dayjs(point.dateTo).isBefore(dayjs())
+  [FILTERS.PAST]: (points) => points === null ? [] : Array.from(points).filter((point) => dayjs(point.dateTo).isBefore(dayjs())
     || dayjs(point.dateFrom).isBefore(dayjs())
     && dayjs(point.dateTo).isAfter(dayjs()))
 };
 
 export {
-  getRandomInteger,
-  getRandomElement,
   getOffersByType,
   bigLetter,
   daysHumanize,
@@ -81,3 +77,5 @@ export {
   sortingByPrice,
   filteringEvents
 };
+
+
