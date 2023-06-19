@@ -1,15 +1,19 @@
 import he from 'he';
-import { daysHumanize, timeHumanize, getTravelPeriod } from '../utils';
-import { getOffersByType, isZero } from '../utils';
+import {
+  daysHumanize,
+  timeHumanize,
+  getTravelPeriod,
+  getOffersByType,
+  isZero,
+} from '../utils';
 import AbstractView from '../framework/view/abstract-view.js';
 import ListOffersView from './list-offers-view.js';
 
 const getOffersList = (checkedOfferIds, allOffers) => {
   const offersLeng = allOffers.length;
-  const checkOffersLeng = checkedOfferIds.length;
-  if (isZero(offersLeng, checkOffersLeng)) { return ''; }
+  const checkLeng = checkedOfferIds.length;
+  if (isZero(offersLeng, checkLeng)) { return ''; }
   let offers = '';
-
   allOffers.forEach((offer) => {
     if (checkedOfferIds.includes(offer.id)){
       offers += `<li class="event__offer">
@@ -19,7 +23,6 @@ const getOffersList = (checkedOfferIds, allOffers) => {
                 </li>`;
     }
   });
-
   return new ListOffersView(offers).template;
 };
 
@@ -57,8 +60,7 @@ const creatingCardPointTemplate = (point, availableDestinations, allOffers) => {
         <span class="visually-hidden">Open event</span>
       </button>
     </div>
-  </li>`
-  );
+  </li>`);
 };
 
 export default class CardPointsView extends AbstractView {
@@ -95,5 +97,3 @@ export default class CardPointsView extends AbstractView {
     this._callback.favoriteClick();
   };
 }
-
-

@@ -1,6 +1,6 @@
 import AbstractView from '../framework/view/abstract-view.js';
 
-const creatingListFiltersItemTemplate = (filter, curFilter) => {
+const creatingListFiltersItemTemplate = (filter, currentFilter) => {
   const {type, name, count } = filter;
   return (
     `<div class="trip-filters__filter">
@@ -8,7 +8,7 @@ const creatingListFiltersItemTemplate = (filter, curFilter) => {
         class="trip-filters__filter-input  visually-hidden"
         type="radio"
         name="trip-filter"
-        ${type === curFilter ? 'checked' : ''}
+        ${type === currentFilter ? 'checked' : ''}
         ${count > 0 ? '' : 'disabled'}
         value=${type}
       >
@@ -17,17 +17,17 @@ const creatingListFiltersItemTemplate = (filter, curFilter) => {
   );
 };
 
-const creatingFiltersTemplate = (filterItems, curFilter) => {
-  const filterItemsTemplate = Array.from(filterItems).map((filter) => creatingListFiltersItemTemplate(filter, curFilter)).join('');
+const createFiltersTemplate = (filterItems, currentFilter) => {
+  const filterItemsTemplate = Array.from(filterItems).map((filter) => creatingListFiltersItemTemplate(filter, currentFilter)).join('');
   return(
     `<form class="trip-filters" action="#" method="get">
-     ${filterItemsTemplate}
+      ${filterItemsTemplate}
       <button class="visually-hidden" type="submit">Accept filter</button>
     </form>`
   );
 };
 
-export default class FiltersView extends AbstractView {
+export default class FilterView extends AbstractView {
   #filters = null;
   #curFilter = null;
 
@@ -37,17 +37,15 @@ export default class FiltersView extends AbstractView {
     this.#curFilter = curFilterType;
   }
 
-  get template () { return creatingFiltersTemplate(this.#filters, this.#curFilter); }
+  get template () { return createFiltersTemplate(this.#filters, this.#curFilter); }
 
   setChangeFilterType = (callback) => {
     this._callback.filterTypeChange = callback;
     this.element.addEventListener('change', this.#handlerChangeFilterType);
   };
 
-  #handlerChangeFilterType = (evt) => {
-    evt.preventDefault();
-    this._callback.filterTypeChange(evt.target.value);
+  #handlerChangeFilterType = (i) => {
+    i.preventDefault();
+    this._callback.filterTypeChange(i.target.value);
   };
 }
-
-

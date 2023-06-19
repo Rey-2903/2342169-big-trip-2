@@ -9,24 +9,21 @@ const creatingSortTemplate = (currentSortType) => (
       <input id="sort-${sortType}" class="trip-sort__input  visually-hidden" data-sort-type="${sortType}"
         type="radio" name="trip-sort" value="sort-${sortType}"
         ${sortType === SORT.EVENT || sortType === SORT.OFFER ? 'disabled' : ''}
-        ${sortType === currentSortType ? 'checked' : ''}
-      >
-      <label class="trip-sort__btn" for="sort-${sortType}">
-        ${sortType === SORT.OFFER ? 'Offers' : sortType}
-      </label>
+        ${sortType === currentSortType ? 'checked' : ''}>
+      <label class="trip-sort__btn" for="sort-${sortType}">${sortType === SORT.OFFER ? 'Offers' : sortType}</label>
     </div>`)).join('')}
   </form>`
 );
 
 export default class SortView extends AbstractView {
-  #sortType = null;
+  #currentSortType = null;
 
-  constructor (sortType) {
+  constructor (currentSortType) {
     super();
-    this.#sortType = sortType;
+    this.#currentSortType = currentSortType;
   }
 
-  get template () { return creatingSortTemplate(this.#sortType); }
+  get template () { return creatingSortTemplate(this.#currentSortType); }
 
   setChangeSort = (callback) => {
     this._callback.sortTypeChange = callback;
@@ -38,4 +35,3 @@ export default class SortView extends AbstractView {
     this._callback.sortTypeChange(i.target.dataset.sortType);
   };
 }
-

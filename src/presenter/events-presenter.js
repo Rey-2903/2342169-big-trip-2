@@ -4,14 +4,21 @@ import SortView from '../view/sort-view.js';
 import RoutePointsPresenter from './route-points-presenter.js';
 import CreateFormPresenter from './create-form-presenter.js';
 import LoadingPointsView from '../view/loading-points-view.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import { render, RenderPosition, remove } from '../framework/render.js';
-import { SORT, ACTIONS_POINTS, UPDATE, FILTERS } from '../fish/const.js';
-import { sortingByTime, sortingByPrice, sortingByDays } from '../utils';
-import { filteringEvents } from '../utils';
+import {
+  SORT,
+  ACTIONS_POINTS,
+  UPDATE,
+  FILTERS,
+  LIMIT,
+} from '../fish/const.js';
+import { sortingByTime, sortingByPrice, sortingByDays, filteringEvents } from '../utils';
 
 export default class EventsPresenter {
   #eventsList = null;
   #eventsContainer = null;
+  #eventsPresenter = new Map();
   #createFormPresenter = null;
   #pointsModel = null;
   #filtersModel = null;
@@ -19,11 +26,11 @@ export default class EventsPresenter {
   #listOffersModel = null;
   #noPointsComponent = null;
   #sorting = null;
-  #eventsPresenter = new Map();
   #defaultSort = SORT.DAY;
   #defaultFilter = FILTERS.EVERYTHING;
-  #isLoading = true;
+  #uiBlocker = new UiBlocker(LIMIT.LOWER_LIMIT, LIMIT.UPPER_LIMIT);
   #loading = new LoadingPointsView();
+  #isLoading = true;
 
   constructor(eventsContainer, pointsModel, listOffersModel, routePointModel, filtersModel) {
     this.#eventsList = new EventsView();
@@ -32,14 +39,13 @@ export default class EventsPresenter {
     this.#filtersModel = filtersModel;
     this.#routePointModel = routePointModel;
     this.#listOffersModel = listOffersModel;
-    this.#createFormPresenter = new CreateFormPresenter(this.#eventsList.element, this.#handleViewAction, this.#routePointModel.routePoint, this.#listOffersModel.offers);
-    this.#pointsModel.addObserver(this.#handlePoint);
-    this.#filtersModel.addObserver(this.#handlePoint);
-    this.#routePointModel.addObserver(this.#handlePoint);
-    this.#listOffersModel.addObserver(this.#handlePoint);
+    this.#pointsModel.addObserver(this.#handleEvent);
+    this.#filtersModel.addObserver(this.#handleEvent);
+    this.#routePointModel.addObserver(this.#handleEvent);
+    this.#listOffersModel.addObserver(this.#handleEvent);
   }
 
-  init () { this.#darwingEvents(); }
+  init () { this.#drawingEvents(); }
 
   createNewForm (callback) {
     this.#defaultSort = SORT.DAY;
@@ -57,103 +63,119 @@ export default class EventsPresenter {
     }
   }
 
-  get destinations() { return this.#routePointModel.routePoint; }
+  get destinations() { return this.#routePointModel.destinations; }
   get offers () { return this.#listOffersModel.offers; }
 
-  #clearEvents = ({resetSorting = false} = {}) => {
+  #drawingPoint (point) {
+    const pointPresenter = new RoutePointsPresenter(this.#eventsList.element, this.#handleActions, this.#handleChange);
+    pointPresenter.init(point, this.destinations, this.offers);
+    this.#eventsPresenter.set(point.id, pointPresenter);
+  }
+
+  #sortEvents = (sortType) => {
+    switch (sortType){
+      case SORT.PRICE:
+        this.#pointsModel.points.sort(sortingByPrice);
+        break;
+      case SORT.TIME:
+        this.#pointsModel.points.sort(sortingByTime);
+        break;
+      default: this.#pointsModel.points.sort(sortingByDays);
+    }
+    this.#defaultSort = sortType;
+  };
+
+  #clearEvents = ({resetSortType = false} = {}) => {
     this.#createFormPresenter.destroy();
     this.#eventsPresenter.forEach((presenter) => presenter.destroy());
     this.#eventsPresenter.clear();
     remove(this.#sorting);
     remove(this.#loading);
-    this.#delEventsNoPoints();
-    if (resetSorting) { this.#defaultSort = SORT.DAY; }
+    if (this.#noPointsComponent) { remove(this.#noPointsComponent); }
+    if (resetSortType) { this.#defaultSort = SORT.DAY; }
   };
 
-  #handleViewAction = (active, update, temp) => {
-    switch (active) {
-      case ACTIONS_POINTS.ADD:
-        this.#pointsModel.addEvent(update, temp);
+  #handleActions = async (actionType, updateType, update) => {
+    this.#uiBlocker.block();
+    switch (actionType) {
+      case ACTIONS_POINTS.UPDATE_POINT:
+        this.#eventsPresenter.get(update.id).setSaving();
+        try { await this.#pointsModel.updatePoint(updateType, update); }
+        catch (error) { this.#eventsPresenter.get(update.id).setAborting(); }
         break;
-      case ACTIONS_POINTS.DELETE:
-        this.#pointsModel.deleteEvent(update, temp);
+      case ACTIONS_POINTS.ADD_POINT:
+        this.#createFormPresenter.setSaving();
+        try { await this.#pointsModel.addPoint(updateType, update); }
+        catch (error) { this.#createFormPresenter.setAborting(); }
         break;
-      case ACTIONS_POINTS.UPDATE:
-        this.#pointsModel.updateEvent(update, temp);
+      case ACTIONS_POINTS.DELETE_POINT:
+        this.#eventsPresenter.get(update.id).setDeleting();
+        try { await this.#pointsModel.deletePoint(updateType, update); }
+        catch (error) { this.#eventsPresenter.get(update.id).setAborting(); }
         break;
     }
+    this.#uiBlocker.unblock();
   };
 
-  #handlePoint = (update, data) => {
-    switch (update) {
-      case UPDATE.MINOR:
-        this.#clearEvents();
-        this.#darwingEvents();
-        break;
-      case UPDATE.MAJOR:
-        this.#clearEvents({ resetSortType: true });
-        this.#darwingEvents();
-        break;
+  #handleEvent = (updateType, data) => {
+    switch (updateType) {
       case UPDATE.PATCH:
         this.#eventsPresenter.get(data.id).init(data, this.destinations, this.offers);
         break;
-      case UPDATE.IN:
+      case UPDATE.MINOR:
+        this.#clearEvents();
+        this.#drawingEvents();
+        break;
+      case UPDATE.MAJOR:
+        this.#clearEvents({resetSortType: true});
+        this.#drawingEvents();
+        break;
+      case UPDATE.INIT:
         this.#isLoading = false;
         remove(this.#loading);
-        this.#delEventsNoPoints();
-        this.#darwingEvents();
+        if (this.#noPointsComponent) { remove(this.#noPointsComponent); }
+        this.#createFormPresenter = new CreateFormPresenter(this.#eventsList.element, this.#handleActions, this.#routePointModel.destinations, this.#listOffersModel.offers);
+        this.#drawingEvents();
         break;
     }
   };
 
-  #darwingEvents = () => {
+  #handleChangeSort = (sortType) => {
+    if (this.#defaultSort === sortType) { return; }
+    this.#sortEvents(sortType);
+    this.#clearEvents();
+    this.#drawingEvents();
+  };
+
+  #handleChange = () => {
+    this.#createFormPresenter.destroy();
+    this.#eventsPresenter.forEach((presenter) => presenter.resetView());
+  };
+
+  #drawingEvents = () => {
     render(this.#eventsList, this.#eventsContainer);
     if (this.#isLoading) {
       render(this.#loading, this.#eventsContainer, RenderPosition.AFTERBEGIN);
       return;
     }
     const points = this.points;
-    const pointsCount = points.length;
-    if (pointsCount === 0) {
-      this.#darwingNoPoints();
+    const leng = points.length;
+    if (leng === 0) {
+      this.#drawingNoPoints();
       return;
     }
-    this.#darwingSortPoints();
-    for (let i = 0; i < this.points.length; i++) {
-      const pointPresenter = new RoutePointsPresenter(this.#eventsList.element, this.#handleViewAction, () => {
-        this.#createFormPresenter.destroy();
-        this.#eventsPresenter.forEach((presenter) => presenter.zeroingView());
-      });
-      pointPresenter.init(this.points[i], this.destinations, this.offers);
-      this.#eventsPresenter.set(this.points[i].id, pointPresenter);
-    }
+    this.#drawingSort();
+    for (let i = 0; i < this.points.length; i++) { this.#drawingPoint(this.points[i]); }
   };
 
-  #darwingSortPoints = () => {
+  #drawingSort = () => {
     this.#sorting = new SortView(this.#defaultSort);
-    this.#sorting.setChangeSort((sort) => {
-      if (this.#defaultSort === sort) { return; }
-      switch (sort) {
-        case SORT.PRICE:
-          this.#pointsModel.points.sort(sortingByPrice);
-          break;
-        case SORT.TIME:
-          this.#pointsModel.points.sort(sortingByTime);
-          break;
-        default: this.#pointsModel.points.sort(sortingByDays);
-      }
-      this.#defaultSort = sort;
-      this.#clearEvents();
-      this.#darwingEvents();
-    });
+    this.#sorting.setChangeSort(this.#handleChangeSort);
     render(this.#sorting, this.#eventsContainer, RenderPosition.AFTERBEGIN);
   };
 
-  #delEventsNoPoints = () => { if (this.#noPointsComponent) { remove(this.#noPointsComponent); } };
-
-  #darwingNoPoints = () => {
+  #drawingNoPoints = () => {
     this.#noPointsComponent = new NoPointsView({ filterType: this.#defaultFilter, });
     render(this.#noPointsComponent, this.#eventsContainer, RenderPosition.AFTERBEGIN);
   };
 }
-

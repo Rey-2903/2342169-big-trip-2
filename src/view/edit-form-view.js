@@ -1,15 +1,17 @@
-import {dateHumanize, getOffersByType, bigLetter, zeroNum, isNull, numIsNull, isInput, slice} from '../utils';
+import {getOffersByType, bigLetter, dateHumanize, isInput} from '../utils';
 import AbstractStatefulView from '../framework/view/abstract-stateful-view.js';
 import { TRIP_TYPES } from '../fish/const.js';
 import he from 'he';
+import { zeroNum } from '../utils';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
-const offersList = (checkOffers, allOffers) => (allOffers.map((offer) => (
+const offersList = (checkedOfferIds, allOffers, isDisabled) => (allOffers.map((offer) => (
   `<div class="event__offer-selector">
       <input class="event__offer-checkbox  visually-hidden"
       id="event-offer-${offer.id}" type="checkbox" name="event-offer-comfort"
-      ${checkOffers.includes(offer.id) ? 'checked' : ''}>
+      ${checkedOfferIds.includes(offer.id) ? 'checked' : ''}
+      ${isDisabled ? 'disabled' : ''}>
       <label class="event__offer-label" for="event-offer-${offer.id}">
         <span class="event__offer-title">${offer.title}</span>
         &plus;&euro;&nbsp;
@@ -18,21 +20,20 @@ const offersList = (checkOffers, allOffers) => (allOffers.map((offer) => (
   </div>`)).join('')
 );
 
-const getOffersList = (checkOffers, allOffers) => {
-  if (zeroNum(allOffers.length)) { return ''; }
-  return (
-    `<section class="event__section  event__section--offers">
-      <h3 class="event__section-title  event__section-title--offers">Offers</h3>
-      <div class="event__available-offers">
-        ${offersList(checkOffers, allOffers)}
-      </div>
-    </section>`
-  );
+const getOffersBlock = (checkedOffers, allOffers, isDisabled) => {
+  const leng = allOffers.length;
+  if (zeroNum(leng)) { return ''; }
+  return (`<section class="event__section  event__section--offers">
+            <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+            <div class="event__available-offers">
+              ${offersList(checkedOffers, allOffers, isDisabled)}
+            </div>
+           </section>`);
 };
 
 const getRoutePointList = (thisDestination, routePoint, type) => {
-  const routePointType = routePoint.find((item) => item.type === type);
-  const allRoutePoint = routePointType ? routePointType : routePoint;
+  const destinationsByType = routePoint.find((item) => item.type === type);
+  const allRoutePoint = destinationsByType ? destinationsByType : routePoint;
   return(
     `<div class="event__field-group  event__field-group--destination">
     <label class="event__label  event__type-output" for="event-destination-1">
@@ -50,9 +51,7 @@ const getEventTypesList = (currentType) => (
     `<div class="event__type-item">
         <input id="event-type-${eventType}-1" class="event__type-input  visually-hidden"
         type="radio" name="event-type" value="${eventType}" ${eventType === currentType ? 'checked' : ''}>
-        <label class="event__type-label  event__type-label--${eventType}" for="event-type-${eventType}-1">
-            ${bigLetter(eventType)}
-        </label>
+          <label class="event__type-label  event__type-label--${eventType}" for="event-type-${eventType}-1">${bigLetter(eventType)}</label>
     </div>`)).join('')
 );
 
@@ -66,11 +65,21 @@ const getImageList = (items) => {
     </div>`);
 };
 
-const creatingEditFormTemplate = (form, allRoutePoint, offersByType) => {
-  const {basePrice, dateFrom, dateTo, destination, offers, type} = form;
-  const curRoutePoint = allRoutePoint.find((item) => item.id === destination);
+const getRoutePointBlock = (destination) => {
+  const description = destination.description !== null ? destination.description : '';
+  return(
+    `<section class="event__section  event__section--destination">
+      <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+      <p class="event__destination-description">${description}</p>
+      ${getImageList(destination.pictures)}
+    </section>`);
+};
 
-  return (
+const creatingEditFormTemplate = (form, allDestinations, offersByType) => {
+  const {basePrice, dateFrom, dateTo, destination, offers, type, isDisabled, isSaving, isDeleting} = form;
+  const curRoutePoint = allDestinations.find((item) => item.id === destination);
+
+  return(
     `<li class="trip-events__item">
       <form class="event event--edit" action="#" method="post">
       <header class="event__header">
@@ -79,22 +88,27 @@ const creatingEditFormTemplate = (form, allRoutePoint, offersByType) => {
             <span class="visually-hidden">Choose event type</span>
             <img class="event__type-icon" width="17" height="17" src="img/icons/${type}.png" alt="Event type icon">
           </label>
-          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox">
+          <input class="event__type-toggle  visually-hidden" id="event-type-toggle-1" type="checkbox"
+          ${isDisabled ? 'disabled' : ''}>
 
-          <div class="event__type-list">
+          <div class="event__type-list" ${isDisabled ? 'disabled' : ''}>
             <fieldset class="event__type-group">
             <legend class="visually-hidden">Event type</legend>
             ${getEventTypesList(type)}
             </fieldset>
           </div>
         </div>
-        ${getRoutePointList(curRoutePoint.name, allRoutePoint, type)}
+        ${getRoutePointList(curRoutePoint.name, allDestinations, type)}
         <div class="event__field-group  event__field-group--time">
           <label class="visually-hidden" for="event-start-time-1">From</label>
-          <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value='${dateHumanize(dateFrom)}'>
+          <input class="event__input  event__input--time" id="event-start-time-1" type="text"
+          name="event-start-time" value='${dateHumanize(dateFrom)}'
+          ${isDisabled ? 'disabled' : ''}>
           &mdash;
           <label class="visually-hidden" for="event-end-time-1">To</label>
-          <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value='${dateHumanize(dateTo)}'>
+          <input class="event__input  event__input--time" id="event-end-time-1" type="text"
+          name="event-end-time" value='${dateHumanize(dateTo)}'
+          ${isDisabled ? 'disabled' : ''} >
         </div>
 
         <div class="event__field-group  event__field-group--price">
@@ -102,24 +116,25 @@ const creatingEditFormTemplate = (form, allRoutePoint, offersByType) => {
             <span class="visually-hidden">Price</span>
             &euro;
           </label>
-          <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value=${basePrice}>
+          <input class="event__input  event__input--price" id="event-price-1"
+          type="text" name="event-price" value=${basePrice}
+          ${isDisabled ? 'disabled' : ''}>
         </div>
 
-        <button class="event__save-btn  btn  btn--blue" type="submit" ${(isNull(dateFrom, dateTo)) ? 'disabled' : ''}>Save</button>
-        <button class="event__reset-btn" type="reset">Delete</button>
+        <button class="event__save-btn  btn  btn--blue" type="submit"
+        ${(dateFrom === null || dateTo === null) || isDisabled ? 'disabled' : ''}>
+        ${isSaving ? 'Saving...' : 'Save'}</button>
+        <button class="event__reset-btn" type="reset">
+        ${isDeleting ? 'Deleting...' : 'Delete'}</button>
         <button class="event__rollup-btn" type="button">
           <span class="visually-hidden">Open event</span>
         </button>
       </header>
       <section class="event__details">
-        ${getOffersList(offers, offersByType.offers)}
-        ${(numIsNull(curRoutePoint.description) && numIsNull(curRoutePoint.pictures)) ? '' :
-      `<section class="event__section  event__section--destination">
-          <h3 class="event__section-title  event__section-title--destination">Destination</h3>
-          <p class="event__destination-description">${curRoutePoint.description !== null ? curRoutePoint.description : ''}</p>
-          ${getImageList(curRoutePoint.pictures)}
-      </section>`
-    }
+        ${getOffersBlock(offers, offersByType.offers, isDisabled)}
+        ${curRoutePoint.description === null && curRoutePoint.pictures === null
+      ? ''
+      : getRoutePointBlock(curRoutePoint)}
       </section>
     </form>
   </li>`
@@ -136,14 +151,13 @@ export default class CreateFormView extends AbstractStatefulView {
 
   constructor(form, allRoutePoint, allOffers){
     super();
-    this._state = CreateFormView.parseFormState(form);
+    this._state = CreateFormView.parseFormToState(form);
     this.#routePoint = allRoutePoint;
     this.#allOffers = allOffers;
     this.#offersType = getOffersByType(this.#allOffers, this._state.type);
-
     this.#setOtherHandler();
     this.#setStartingDate();
-    this.#setFinishDat();
+    this.#setFinishDate();
   }
 
   get template () { return creatingEditFormTemplate(this._state, this.#routePoint, this.#offersType); }
@@ -158,17 +172,16 @@ export default class CreateFormView extends AbstractStatefulView {
     }
   };
 
-  reset = (point) => { this.updateElement( CreateFormView.parseFormState(point), );
-  };
+  reset = (point) => { this.updateElement(CreateFormView.parseFormToState(point),); };
 
   setFormSubmitHandler = (callback) => {
     this._callback.formSubmit = callback;
     this.element.addEventListener('submit', this.#handlerSubmitForm);
   };
 
-  #handlerSubmitForm = (evt) => {
-    evt.preventDefault();
-    this._callback.formSubmit(CreateFormView.parseStateForm(this._state));
+  #handlerSubmitForm = (i) => {
+    i.preventDefault();
+    this._callback.formSubmit(CreateFormView.parseStateToForm(this._state));
   };
 
   setFormCloseHandler = (callback) => {
@@ -176,8 +189,8 @@ export default class CreateFormView extends AbstractStatefulView {
     this.element.querySelector('.event__rollup-btn').addEventListener('click', this.#handlerClosingForm);
   };
 
-  #handlerClosingForm = (evt) => {
-    evt.preventDefault();
+  #handlerClosingForm = (i) => {
+    i.preventDefault();
     this._callback.formClose();
   };
 
@@ -186,9 +199,9 @@ export default class CreateFormView extends AbstractStatefulView {
     this.element.querySelector('.event__reset-btn').addEventListener('click', this.#handlerDeleteClick);
   };
 
-  #handlerDeleteClick = (evt) => {
-    evt.preventDefault();
-    this._callback.deleteClick(CreateFormView.parseStateForm(this._state));
+  #handlerDeleteClick = (i) => {
+    i.preventDefault();
+    this._callback.deleteClick(CreateFormView.parseStateToForm(this._state));
   };
 
   _restoreHandlers = () => {
@@ -197,7 +210,7 @@ export default class CreateFormView extends AbstractStatefulView {
     this.setFormCloseHandler(this._callback.formClose);
     this.setDeleteClickHandler(this._callback.deleteClick);
     this.#setStartingDate();
-    this.#setFinishDat();
+    this.#setFinishDate();
   };
 
   #setOtherHandler = () => {
@@ -220,7 +233,7 @@ export default class CreateFormView extends AbstractStatefulView {
     );
   };
 
-  #setFinishDat = () => {
+  #setFinishDate = () => {
     this.#finishDate = flatpickr(
       this.element.querySelector('#event-end-time-1'),
       {
@@ -233,36 +246,48 @@ export default class CreateFormView extends AbstractStatefulView {
     );
   };
 
+  #updateOffersByType(newType) {this.#offersType = getOffersByType(this.#allOffers, newType);}
+
   #handlerPointType = (i) => {
-    if (isInput(i.target.tagName)) {
-      this.#offersType = getOffersByType(this.#allOffers, i.target.value);
-      this.updateElement({ type: i.target.value, offers: [], });
+    if(isInput(i.target.tagName)){
+      this.#updateOffersByType(i.target.value);
+      this.updateElement({type: i.target.value, offers: [],});
     }
   };
 
   #handlerOffers = (i) => {
     if (isInput(i.target.tagName)) {
       i.preventDefault();
-      if (this._state.offers.includes(Number(slice(i)))) { this._state.offers = this._state.offers.filter((id) => id !== Number(slice(i))); }
-      else { this._state.offers.push(Number(slice(i))); }
+      const newOfferId = Number(i.target.id.slice(-1));
+      if (this._state.offers.includes(newOfferId)) { this._state.offers = this._state.offers.filter((id) => id !== newOfferId); }
+      else { this._state.offers.push(newOfferId); }
       this.updateElement({ offers: this._state.offers, });
     }
   };
 
   #handlerRoutePointInput = (i) => {
     i.preventDefault();
-    const newRoutePoint = this.#routePoint.find((item) => item.name === i.target.value);
-    if (newRoutePoint) { this.updateElement({ destination: newRoutePoint.id, }); }
+    const newDestination = this.#routePoint.find((item) => item.name === i.target.value);
+    if (newDestination) { this.updateElement({ destination: newDestination.id, }); }
   };
 
   #handlerCostInput = (i) => {
     i.preventDefault();
-    const newCost = Number(i.target.value);
-    if (Number.isFinite(newCost) && newCost >= 0) { this._setState({ basePrice: newCost, }); }
+    const newPrice = Number(i.target.value);
+    if (Number.isFinite(newPrice) && newPrice > 0) { this._setState({ basePrice: newPrice, });
+    }
   };
 
-  static parseFormState = (form) => ({...form});
-  static parseStateForm = (state) => ({...state});
+  static parseFormToState = (form) => ({...form,
+    isDisabled: false,
+    isSaving: false,
+    isDeleting: false,
+  });
+
+  static parseStateToForm = (state) => {
+    delete state.isDisabled;
+    delete state.isSaving;
+    delete state.isDeleting;
+    return state;
+  };
 }
-
-

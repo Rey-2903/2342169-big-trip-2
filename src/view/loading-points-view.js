@@ -7,4 +7,3 @@ const creatingLoading = () => (
 export default class LoadingPointsView extends AbstractView {
   get template() { return creatingLoading(); }
 }
-
