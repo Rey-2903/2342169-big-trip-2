@@ -1,19 +1,21 @@
-import { allOffersPoint } from '../fish/list-offers.js';
+import { UPDATE } from '../fish/const.js';
 import Observable from '../framework/observable.js';
 
 export default class ListOffersModel extends Observable {
-  #offers = null;
+  #offers = [];
+  #api = null;
 
-  constructor () {
+  constructor (api) {
     super();
-    this.#offers = allOffersPoint;
+    this.#api = api;
   }
 
   get offers () { return this.#offers; }
 
-  setOffers(update, newOf) {
-    this.#offers = newOf;
-    this._notify(update, newOf);
-  }
+  init = async () => {
+    try { this.#offers = await this.#api.offers; }
+    catch (error) { this.#offers = []; }
+    this._notify(UPDATE.IN);
+  };
 }
 
