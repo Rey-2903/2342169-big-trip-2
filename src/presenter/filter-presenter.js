@@ -1,20 +1,20 @@
 import { render, replace, remove } from '../framework/render.js';
 import FilterView from '../view/filters-view.js';
-import { filteringEvents } from '../utils';
+import { filteringEvents, numIsNull } from '../utils';
 import { FILTERS, UPDATE } from '../fish/const.js';
 
 export default class FilterPresenter {
   #filtCont = null;
   #filtComp = null;
-  #filterModel = null;
   #pointsModel = null;
+  #filterComponent = null;
 
-  constructor(filtCont, filterModel, pointsModel) {
+  constructor(filtCont, filtComp, pointsModel) {
     this.#filtCont = filtCont;
-    this.#filterModel = filterModel;
+    this.#filtComp = filtComp;
     this.#pointsModel = pointsModel;
     this.#pointsModel.addObserver(this.#handleEvent);
-    this.#filterModel.addObserver(this.#handleEvent);
+    this.#filtComp.addObserver(this.#handleEvent);
   }
 
   get filters() {
@@ -39,21 +39,21 @@ export default class FilterPresenter {
 
   init = () => {
     const filters = this.filters;
-    const pastFilter = this.#filtComp;
-    this.#filtComp = new FilterView(filters, this.#filterModel.filter);
-    this.#filtComp.setChangeFilterType((filterType) => {
-      if (this.#filterModel.filter === filterType) { return; }
-      this.#filterModel.setFilter(UPDATE.MAJOR, filterType);
-    });
-    if (pastFilter === null) {
-      render(this.#filtComp, this.#filtCont);
+    const pastFilter = this.#filterComponent;
+    this.#filterComponent = new FilterView(filters, this.#filtComp.filter);
+    this.#filterComponent.setChangeFilterType(this.#handleChangeFilter);
+    if (numIsNull(pastFilter)) {
+      render(this.#filterComponent, this.#filtCont);
       return;
     }
-    replace(this.#filtComp, pastFilter);
+    replace(this.#filterComponent, pastFilter);
     remove(pastFilter);
   };
 
   #handleEvent = () => { this.init(); };
+
+  #handleChangeFilter = (filterType) => {
+    if (this.#filtComp.filter === filterType) { return; }
+    this.#filtComp.setFilter(UPDATE.MAJOR, filterType);
+  };
 }
-
-

@@ -11,13 +11,13 @@ const siteHeaderElement = document.querySelector('.trip-main');
 const siteMainElement = document.querySelector('.trip-events');
 const newEvent = siteHeaderElement.querySelector('.trip-main__event-add-btn');
 
-const api = new Api(END_POINT, AUTHORIZATION);
-const pointsModel = new PointsModel(api);
-const listOffersModel = new ListOffersModel(api);
-const routePointModel = new RoutePointModel(api);
-const filterModel = new FilterModel();
-const filterPresenter = new FilterPresenter(siteHeaderElement.querySelector('.trip-controls__filters'), filterModel, pointsModel);
-const eventsPresenter = new EventsPresenter(siteMainElement, pointsModel, listOffersModel, routePointModel, filterModel);
+const apiService = new Api(END_POINT, AUTHORIZATION);
+const pointsModel = new PointsModel(apiService);
+const listOffersModel = new ListOffersModel(apiService);
+const routePointModel = new RoutePointModel(apiService);
+const filtersModel = new FilterModel();
+const filterPresenter = new FilterPresenter(siteHeaderElement.querySelector('.trip-controls__filters'), filtersModel, pointsModel);
+const eventsPresenter = new EventsPresenter(siteMainElement, pointsModel, listOffersModel, routePointModel, filtersModel);
 
 const handleNewEventButtonClick = () => {
   eventsPresenter.createNewForm(() => { newEvent.disabled = false; });
@@ -29,8 +29,8 @@ filterPresenter.init();
 
 listOffersModel.init().finally(() => {
   routePointModel.init().finally(() => {
-    pointsModel.init().finally(() => { newEvent.addEventListener('click', handleNewEventButtonClick); });
+    pointsModel.init().finally(() => {
+      newEvent.addEventListener('click', handleNewEventButtonClick);
+    });
   });
 });
-
-

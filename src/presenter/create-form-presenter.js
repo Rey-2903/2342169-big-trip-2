@@ -1,8 +1,7 @@
 import CreateFormView from '../view/create-form-view.js';
 import { render, remove, RenderPosition } from '../framework/render.js';
 import { ACTIONS_POINTS, UPDATE, TRIP_TYPES } from '../fish/const.js';
-import { numIsNull, notNumNull } from '../utils';
-import { nanoid } from 'nanoid';
+import {notNumNull, numIsNull} from '../utils';
 import dayjs from 'dayjs';
 
 export default class CreateFormPresenter {
@@ -24,10 +23,7 @@ export default class CreateFormPresenter {
     this.#deleteCallb = callback;
     if (notNumNull(this.#createForm)) { return; }
     this.#createForm = new CreateFormView(this.#getEmptyForm(), this.#routePoint, this.#offers);
-    this.#createForm.setFormSubmitHandler((point) => {
-      this.#changeData(ACTIONS_POINTS.ADD, UPDATE.MINOR, {id: nanoid(), ...point},);
-      this.destroy();
-    });
+    this.#createForm.setFormSubmitHandler((point) => { this.#changeData(ACTIONS_POINTS.ADD_POINT, UPDATE.MINOR, point);});
     this.#createForm.setFormCloseHandler(() => this.destroy());
     this.#createForm.setDeleteClickHandler(() => this.destroy());
     render(this.#createForm, this.#eventsList, RenderPosition.AFTERBEGIN);
@@ -42,15 +38,28 @@ export default class CreateFormPresenter {
     document.removeEventListener('keydown', this.#handleEscKeyDown);
   };
 
+  setSaving = () => { this.#createForm.updateElement({ isDisabled: true, isSaving: true, }); };
+
+  setAborting = () => {
+    const resetFormState = () => {
+      this.#createForm.updateElement({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false,
+      });
+    };
+    this.#createForm.shake(resetFormState);
+  };
+
   #getEmptyForm = () => ({
-    basePrice: 0,
-    dateFrom: dayjs().toDate(),
-    dateTo: dayjs().toDate(),
-    destination: this.#routePoint[0].id,
-    id: 0,
-    isFavourite: false,
-    offers: [],
-    type: TRIP_TYPES[0],
+    'basePrice': 1,
+    'dateFrom': dayjs().toDate(),
+    'dateTo': dayjs().toDate(),
+    'destination': this.#routePoint[0].id,
+    'id': 0,
+    'isFavourite': false,
+    'offers': [],
+    'type': TRIP_TYPES[0],
   });
 
   #handleEscKeyDown = (i) => {
@@ -60,4 +69,3 @@ export default class CreateFormPresenter {
     }
   };
 }
-

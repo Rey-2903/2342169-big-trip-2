@@ -1,8 +1,10 @@
 import {
-  ERROR_UPDATE,
-  ERROR_DELETE,
-  ERROR_UP_TASK,
   UPDATE,
+  ERROR_UPDATE,
+  ERROR_UP,
+  ERROR_ADD,
+  ERROR_DELETE,
+  ERROR_DEL,
 } from '../fish/const.js';
 import Observable from '../framework/observable.js';
 import { notNumNull } from '../utils';
@@ -16,54 +18,66 @@ export default class PointsModel extends Observable {
     this.#api = api;
   }
 
-  get points () { return this.#points; }
-
   init = async () => {
     try {
       const ev = await this.#api.points;
-      this.#points = ev.map(this.#adaptToClient);
+      this.#points = ev.map(this.#adapterClient);
     }
     catch (error) { this.#points = []; }
-    this._notify(UPDATE.IN);
+    this._notify(UPDATE.INIT);
   };
 
-  updateEvent = async (update, temp) => {
-    const id = this.#points.findIndex((point) => point.id === temp.id);
+  get points () { return this.#points; }
+
+  updatePoint = async (type, update) => {
+    const id = this.#points.findIndex((point) => point.id === update.id);
     if (id === -1) { throw new Error(ERROR_UPDATE); }
     try {
-      const response = await this.#api.upInf(temp);
-      const task = this.#adaptToClient(response);
-      this.#points = [...this.#points.slice(0, id), task, ...this.#points.slice(id + 1),];
-      this._notify(update, task);
-    } catch (error) { throw new Error(ERROR_UP_TASK); }
+      const answer = await this.#api.updatePoint(update);
+      const upPoint = this.#adapterClient(answer);
+      this.#points = [...this.#points.slice(0, id), upPoint, ...this.#points.slice(id + 1),];
+      this._notify(type, upPoint);
+    }
+    catch (error) { throw new Error(ERROR_UP); }
   };
 
-  addEvent = (update, temp) => {
-    this.#points = [temp, ...this.#points,];
-    this._notify(update, temp);
+  addPoint = async (type, update) => {
+    try {
+      const answer = await this.#api.addPoint(update);
+      const newEv = this.#adapterClient(answer);
+      this.#points = [newEv, ...this.#points];
+      this._notify(type, newEv);
+    }
+    catch (error) { throw new Error(ERROR_ADD); }
   };
 
-  deleteEvent = (update, temp) => {
-    const id = this.#points.findIndex((point) => point.id === temp.id);
+  deletePoint = async (type, update) => {
+    const id = this.#points.findIndex((point) => point.id === update.id);
     if (id === -1) { throw new Error(ERROR_DELETE); }
-    this.#points = [...this.#points.slice(0, id), ...this.#points.slice(id + 1)];
-    this._notify(update);
+    try {
+      await this.#api.deletePoint(update);
+      this.#points = [...this.#points.slice(0, id), ...this.#points.slice(id + 1),];
+      this._notify(type);
+    }
+    catch (error) { throw new Error(ERROR_DEL); }
   };
 
-  #adaptToClient = (ev) => {
-    const transformation = {
-      ...ev,
-      basePrice: ev['base_price'],
-      dateFrom: notNumNull(ev['date_from']) ? new Date(ev['date_from']) : ev['date_from'],
-      dateTo: notNumNull(ev['date_to']) ? new Date(ev['date_to']) : ev['date_to'],
-      isFavourite: ev['is_favorite'],
+  #adapterClient = (point) => {
+    const redefinition = {
+      ...point,
+      basePrice: point['base_price'],
+      dateFrom: notNumNull(point['date_from'])
+        ? new Date(point['date_from'])
+        : point['date_from'],
+      dateTo: notNumNull(point['date_to'])
+        ? new Date(point['date_to'])
+        : point['date_to'],
+      isFavourite: point['is_favorite'],
     };
-    delete transformation['base_price'];
-    delete transformation['date_from'] ;
-    delete transformation['date_to'];
-    delete transformation['is_favorite'];
-    return transformation;
+    delete redefinition['base_price'];
+    delete redefinition['date_from'] ;
+    delete redefinition['date_to'];
+    delete redefinition['is_favorite'];
+    return redefinition;
   };
 }
-
-

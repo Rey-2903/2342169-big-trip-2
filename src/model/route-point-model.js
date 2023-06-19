@@ -1,5 +1,5 @@
-import { UPDATE } from '../fish/const.js';
 import Observable from '../framework/observable.js';
+import { UPDATE } from '../fish/const.js';
 
 export default class RoutePointModel extends Observable {
   #routePoint = [];
@@ -10,13 +10,11 @@ export default class RoutePointModel extends Observable {
     this.#api = api;
   }
 
-  get routePoint () { return this.#routePoint; }
+  get destinations () {return this.#routePoint;}
 
   init = async () => {
-    try { this.#routePoint = await this.#api.routePoint; }
+    try { this.#routePoint = await this.#api.destinations; }
     catch (error) { this.#routePoint = []; }
-    this._notify(UPDATE.IN);
+    this._notify(UPDATE.INIT);
   };
 }
-
-
